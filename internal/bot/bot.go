@@ -65,9 +65,7 @@ func (b *Bot) Stop() {
 
 // commandHandler processes incoming interactions and routes them to Lua-defined commands.
 func (b *Bot) commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if i.Type != discordgo.InteractionApplicationCommand {
-		return
-	}
+	slog.Info("Received interaction", "type", i.Type, "name", i.Data)
 
 	// Execute the corresponding Lua command
 	b.luaMgr.HandleCommand(s, i)

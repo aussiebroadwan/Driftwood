@@ -1,4 +1,4 @@
-local discord = require("discord")
+local discord = require("driftwood")
 
 --- Handles the "join" subcommand with arguments and options.
 -- @param interaction table The interaction object from Discord.

@@ -1,6 +1,7 @@
 package bindings
 
 import (
+	"driftwood/internal/lua/utils"
 	"fmt"
 	"log/slog"
 
@@ -136,8 +137,12 @@ func (b *ApplicationCommandBinding) parseOptions(L *lua.LState, parentName strin
 	return commandOptions
 }
 
-// HandleCommand executes the Lua handler for a command or subcommand.
-func (b *ApplicationCommandBinding) HandleCommand(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *ApplicationCommandBinding) CanHandleInteraction(interaction *discordgo.InteractionCreate) bool {
+	return interaction.Type == discordgo.InteractionApplicationCommand
+}
+
+// HandleInteraction executes the Lua handler for a command or subcommand.
+func (b *ApplicationCommandBinding) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
 	slog.Info("Handling command interaction", "interaction_id", interaction.ID)
 	data := interaction.ApplicationCommandData()
 	commandName := data.Name
@@ -184,6 +189,7 @@ func (b *ApplicationCommandBinding) prepareInteractionTable(L *lua.LState, inter
 
 	interactionTable.RawSetString("options", b.buildOptionsTable(L, nil, interaction.ApplicationCommandData().Options))
 	interactionTable.RawSetString("reply", L.NewFunction(b.replyFunction(interaction)))
+	interactionTable.RawSetString("reply_with_action", L.NewFunction(b.replyWithActionFunction(interaction)))
 
 	mt := L.NewTable()
 	mt.RawSetString("__index", interactionTable)
@@ -223,62 +229,10 @@ func (b *ApplicationCommandBinding) buildOptionsTable(L *lua.LState, T *lua.LTab
 
 // replyFunction returns a Lua function for replying to interactions.
 func (b *ApplicationCommandBinding) replyFunction(interaction *discordgo.InteractionCreate) lua.LGFunction {
-	return func(L *lua.LState) int {
-		argCount := L.GetTop()
-		var message string
-		var options *lua.LTable
+	return utils.ReplyFunction(b.Session, interaction)
+}
 
-		if argCount == 3 {
-			L.CheckType(1, lua.LTTable) // Check 'self' argument is a table
-			message = L.CheckString(2)
-			L.CheckType(3, lua.LTTable) // Check 'options' argument is a table
-			options = L.OptTable(3, nil)
-		} else if argCount == 2 {
-			L.CheckType(1, lua.LTTable) // Check 'self' argument is a table
-			message = L.CheckString(2)
-		} else {
-			L.ArgError(1, "invalid arguments, expected (message [, options])")
-			return 0
-		}
-
-		ephemeral := false
-		mention := true
-		if options != nil {
-			if options.RawGetString("ephemeral") != lua.LNil {
-				if options.RawGetString("ephemeral").Type() != lua.LTBool {
-					L.ArgError(1, "'ephemeral' in options must be a boolean")
-					return 0
-				}
-				ephemeral = lua.LVAsBool(options.RawGetString("ephemeral"))
-			}
-			if options.RawGetString("mention") != lua.LNil {
-				if options.RawGetString("mention").Type() != lua.LTBool {
-					L.ArgError(1, "'mention' in options must be a boolean")
-					return 0
-				}
-				mention = lua.LVAsBool(options.RawGetString("mention"))
-			}
-		}
-
-		if mention {
-			message = fmt.Sprintf("<@%s> %s", interaction.Member.User.ID, message)
-		}
-
-		flags := discordgo.MessageFlags(0)
-		if ephemeral {
-			flags = discordgo.MessageFlagsEphemeral
-		}
-
-		if err := b.Session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: message,
-				Flags:   flags,
-			},
-		}); err != nil {
-			slog.Error("Failed to send interaction reply", "error", err)
-		}
-
-		return 0
-	}
+// replyWithActionFunction returns a Lua function for replying to interactions.
+func (b *ApplicationCommandBinding) replyWithActionFunction(interaction *discordgo.InteractionCreate) lua.LGFunction {
+	return utils.ReplyWithActionFunction(b.Session, interaction)
 }

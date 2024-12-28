@@ -1,4 +1,4 @@
-local discord = require("discord")
+local discord = require("driftwood")
 
 -- Import subcommands.
 local start_subcommand = require("commands.example_game.start")

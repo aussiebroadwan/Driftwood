@@ -26,6 +26,7 @@ func NewManager(session *discordgo.Session, guildID string) *LuaManager {
 		LuaState: lua.NewState(),
 		Bindings: []bindings.LuaBinding{
 			bindings.NewApplicationCommandBinding(session, guildID),
+			bindings.NewInteractionEventBinding(session),
 			// Add more bindings here as needed.
 		},
 	}
@@ -132,20 +133,19 @@ func (m *LuaManager) RegisterDiscordModule() {
 	}
 
 	// Register the loader.
-	m.LuaState.PreloadModule("discord", discordLoader)
+	m.LuaState.PreloadModule("driftwood", discordLoader)
 }
 
 func (m *LuaManager) HandleCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if i.Type != discordgo.InteractionApplicationCommand {
-		return
-	}
-
-	slog.Info("Handling command", "interaction", i.ID)
-
 	// Route the command to the ApplicationCommandBinding.
 	for idx := range m.Bindings {
-		if err := m.Bindings[idx].HandleCommand(m.LuaState, i); err == nil {
-			return // Command was handled successfully
+		if m.Bindings[idx].CanHandleInteraction(i) {
+			slog.Debug("Binding matched for interaction", "binding", m.Bindings[idx].Name())
+			if err := m.Bindings[idx].HandleInteraction(m.LuaState, i); err == nil {
+				return // Command was handled successfully
+			} else {
+				slog.Warn("Error handling interaction with binding", "binding", m.Bindings[idx].Name(), "error", err)
+			}
 		}
 	}
 

@@ -1,4 +1,4 @@
-local discord = require("discord")
+local discord = require("driftwood")
 
 local start_subcommand = {
     name = "start",

@@ -81,7 +81,7 @@ Driftwood supports both single-file and modular command structures.
 ```lua
 -- file: lua/commands/ping.lua
 
-local discord = require("discord")
+local discord = require("driftwood")
 
 -- Register the /ping command
 discord.register_application_command({
@@ -101,7 +101,7 @@ In this the command entry point is the `init.lua` file.
 ```lua
 -- file: lua/commands/example_game/init.lua
 
-local discord = require("discord")
+local discord = require("driftwood")
 
 -- Import subcommands.
 local start_subcommand = require("commands.example_game.start")
@@ -124,7 +124,7 @@ discord.register_application_command({
 ```lua
 -- file: lua/commands/example_game/start.lua
 
-local discord = require("discord")
+local discord = require("driftwood")
 
 return {
     name = "start",
@@ -140,7 +140,7 @@ return {
 ```lua
 -- file: lua/commands/example_game/join.lua
 
-local discord = require("discord")
+local discord = require("driftwood")
 
 return {
     name = "join",
