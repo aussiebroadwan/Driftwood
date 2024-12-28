@@ -64,7 +64,7 @@ func ReplyWithActionFunction(session *discordgo.Session, interaction *discordgo.
 		}
 
 		// Parse components from the Lua table
-		components, err := parseComponents(L, componentsTable)
+		components, err := ParseComponents(L, componentsTable)
 		if err != nil {
 			L.ArgError(2, err.Error())
 			return 0
@@ -85,40 +85,4 @@ func ReplyWithActionFunction(session *discordgo.Session, interaction *discordgo.
 
 		return 0
 	}
-}
-
-// parseComponents parses a Lua table into Discord message components.
-func parseComponents(_ *lua.LState, table *lua.LTable) ([]discordgo.MessageComponent, error) {
-	var components []discordgo.MessageComponent
-
-	table.ForEach(func(_, value lua.LValue) {
-		componentTable, ok := value.(*lua.LTable)
-		if !ok {
-			return // Skip invalid entries
-		}
-
-		componentType := componentTable.RawGetString("type").String()
-		switch componentType {
-		case "button":
-			label := componentTable.RawGetString("label").String()
-			customID := componentTable.RawGetString("custom_id").String()
-
-			components = append(components, discordgo.Button{
-				Label:    label,
-				CustomID: customID,
-				Style:    discordgo.PrimaryButton, // Default style
-			})
-		default:
-			return
-		}
-	})
-
-	// Wrap components in an action row
-	if len(components) > 0 {
-		return []discordgo.MessageComponent{
-			discordgo.ActionsRow{Components: components},
-		}, nil
-	}
-
-	return nil, fmt.Errorf("no valid components found")
 }

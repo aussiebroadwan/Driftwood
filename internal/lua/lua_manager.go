@@ -36,7 +36,10 @@ func NewManager(session *discordgo.Session, guildID string) *LuaManager {
 			bindings.NewStateBindingGet(sm),
 			bindings.NewStateBindingSet(sm),
 			bindings.NewStateBindingClear(sm),
-			// Dont put state bindings here, they are handled differently
+
+			bindings.NewMessageBindingAdd(session),
+			bindings.NewMessageBindingEdit(session),
+			bindings.NewMessageBindingDelete(session),
 		},
 	}
 
@@ -158,8 +161,5 @@ func (m *LuaManager) HandleCommand(s *discordgo.Session, i *discordgo.Interactio
 		}
 	}
 
-	slog.Warn("Command binding not found",
-		"command", i.ApplicationCommandData().Name,
-		slog.Any("options", i.ApplicationCommandData().Options),
-		slog.Any("bindings", m.Bindings))
+	slog.Warn("Command binding not found", "interaction_id", i.ID)
 }

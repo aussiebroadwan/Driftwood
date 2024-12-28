@@ -191,6 +191,9 @@ func (b *ApplicationCommandBinding) prepareInteractionTable(L *lua.LState, inter
 	interactionTable.RawSetString("reply", L.NewFunction(b.replyFunction(interaction)))
 	interactionTable.RawSetString("reply_with_action", L.NewFunction(b.replyWithActionFunction(interaction)))
 
+	interactionTable.RawSetString("interaction_id", lua.LString(interaction.ID))
+	interactionTable.RawSetString("channel_id", lua.LString(interaction.ChannelID))
+
 	mt := L.NewTable()
 	mt.RawSetString("__index", interactionTable)
 	L.SetMetatable(interactionTable, mt)
