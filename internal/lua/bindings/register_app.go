@@ -109,7 +109,7 @@ func (b *ApplicationCommandBinding) parseOptions(L *lua.LState, parentName strin
 			option := &discordgo.ApplicationCommandOption{
 				Name:        name.String(),
 				Description: description.String(),
-				Type:        discordgo.ApplicationCommandOptionType(int(typeField.(lua.LNumber))),
+				Type:        discordgo.ApplicationCommandOptionType(uint8(typeField.(lua.LNumber))),
 				Required:    lua.LVAsBool((optTable.RawGetString("required"))),
 			}
 

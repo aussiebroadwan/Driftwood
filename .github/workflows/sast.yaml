@@ -1,0 +1,23 @@
+name: Static application security testing
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # Perform a security check on the whole project, there might be some detections
+  # which we know are fine so we can add the `#nosec [G-CODE] [--Justification]`
+  # to ignore it.
+  sast-check:
+    name: sast
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./...

@@ -60,7 +60,10 @@ func (b *Bot) Start(path string) error {
 // Stop gracefully closes the Discord session.
 func (b *Bot) Stop() {
 	slog.Info("Stopping bot session")
-	b.Session.Close()
+	err := b.Session.Close()
+	if err != nil {
+		slog.Error("Failed to close Discord session", "error", err)
+	}
 }
 
 // commandHandler processes incoming interactions and routes them to Lua-defined commands.
