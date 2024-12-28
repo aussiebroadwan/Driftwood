@@ -27,6 +27,7 @@ func NewManager(session *discordgo.Session, guildID string) *LuaManager {
 		Bindings: []bindings.LuaBinding{
 			bindings.NewApplicationCommandBinding(session, guildID),
 			bindings.NewInteractionEventBinding(session),
+			&bindings.RunAfterBinding{},
 			// Add more bindings here as needed.
 		},
 	}
