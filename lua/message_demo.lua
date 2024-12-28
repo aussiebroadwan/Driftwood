@@ -9,7 +9,7 @@ local function handle_message_demo(interaction)
 
     -- Step 1: Add a message to the channel.
     local message_id = discord.message.add(interaction.channel_id, "Initial message! Updating soon...", {
-        { type = "button", label = "Click me", custom_id = "example_button" }, 
+        { type = "button", label = "Click me", custom_id = "md:button:initial" }, 
     })
 
     if not message_id then
@@ -35,7 +35,7 @@ local function handle_message_demo(interaction)
         end
 
         local success = discord.message.edit(message_state.message_id, message_state.channel_id, "This is the updated content!", {
-            { type = "button", label = "Updated button", custom_id = "updated_button"}, 
+            { type = "button", label = "Updated button", custom_id = "md:button:updated"}, 
         })
 
         if not success then
@@ -68,3 +68,13 @@ discord.register_application_command({
     description = "Demonstrates message lifecycle: add, edit, delete with state management",
     handler = handle_message_demo
 })
+
+-- Register the interaction to handle "md:button:value".
+discord.register_interaction("md:button:(?P<value>\\d+)", function(interaction)
+    local value = interaction.data.value
+    if value then
+        interaction:reply("Button clicked with value: " .. value, { ephemeral = true })
+    else
+        interaction:reply("No value found in the interaction.", { ephemeral = true })
+    end
+end)

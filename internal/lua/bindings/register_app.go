@@ -185,19 +185,8 @@ func (b *ApplicationCommandBinding) HandleInteraction(L *lua.LState, interaction
 
 // prepareInteractionTable prepares a Lua table containing interaction details.
 func (b *ApplicationCommandBinding) prepareInteractionTable(L *lua.LState, interaction *discordgo.InteractionCreate) *lua.LTable {
-	interactionTable := L.NewTable()
-
+	interactionTable := utils.PrepareInteractionTable(L, b.Session, interaction)
 	interactionTable.RawSetString("options", b.buildOptionsTable(L, nil, interaction.ApplicationCommandData().Options))
-	interactionTable.RawSetString("reply", L.NewFunction(b.replyFunction(interaction)))
-	interactionTable.RawSetString("reply_with_action", L.NewFunction(b.replyWithActionFunction(interaction)))
-
-	interactionTable.RawSetString("interaction_id", lua.LString(interaction.ID))
-	interactionTable.RawSetString("channel_id", lua.LString(interaction.ChannelID))
-
-	mt := L.NewTable()
-	mt.RawSetString("__index", interactionTable)
-	L.SetMetatable(interactionTable, mt)
-
 	return interactionTable
 }
 
