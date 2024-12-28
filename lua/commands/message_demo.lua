@@ -23,12 +23,14 @@ local function handle_message_demo(interaction)
     -- Step 2: Reply with an ephemeral confirmation.
     interaction:reply("Message sent! It will be updated and deleted shortly.", { ephemeral = true })
 
+    discord.log.info("Message added with ID: " .. message_id)
+
     -- Step 3: Schedule an edit after 5 seconds.
     discord.timer.run_after(function()
         -- Retrieve the stored message details from the state.
         local message_state = discord.state.get(state_key)
         if not message_state then
-            print("Message state not found. Skipping edit.")
+            discord.log.error("Message state not found. Skipping edit.")
             return
         end
 
@@ -37,22 +39,22 @@ local function handle_message_demo(interaction)
         })
 
         if not success then
-            print("Failed to edit the message.")
+            discord.log.error("Failed to edit the message.")
         end
     end, 5)
 
     -- Step 4: Schedule a deletion after 10 seconds.
-    discord.run_after(function()
+    discord.timer.run_after(function()
         -- Retrieve the stored message details from the state.
         local message_state = discord.state.get(state_key)
         if not message_state then
-            print("Message state not found. Skipping deletion.")
+            discord.log.error("Message state not found. Skipping deletion.")
             return
         end
 
         local success = discord.message.delete(message_state.message_id, message_state.channel_id)
         if not success then
-            print("Failed to delete the message.")
+            discord.log.info("Failed to delete the message.")
         end
 
         -- Clear the state after the message is deleted.
