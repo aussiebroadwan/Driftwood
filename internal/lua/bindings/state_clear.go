@@ -23,7 +23,7 @@ func NewStateBindingClear(sm *utils.StateManager) *StateBindingClear {
 
 // Name returns the name of the binding for global registration in Lua.
 func (b *StateBindingClear) Name() string {
-	return "state_clear"
+	return "clear"
 }
 
 // Register adds the state-related functions to the Lua state.

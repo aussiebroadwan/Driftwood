@@ -15,10 +15,25 @@ import (
 	"driftwood/internal/lua/utils"
 )
 
+// DiscordOptionTypes maps human-readable constants to Discord's option type values.
+var DiscordOptionTypes = map[string]int{
+	"option_subcommand":       1,
+	"option_subcommand_group": 2,
+	"option_string":           3,
+	"option_integer":          4,
+	"option_boolean":          5,
+	"option_user":             6,
+	"option_channel":          7,
+	"option_role":             8,
+	"option_mentionable":      9,
+	"option_number":           10,
+	"option_attachment":       11,
+}
+
 // LuaManager handles loading and executing Lua scripts and binding them to Discord commands/events.
 type LuaManager struct {
 	LuaState     *lua.LState // The Lua VM state
-	Bindings     []bindings.LuaBinding
+	Bindings     map[string][]bindings.LuaBinding
 	StateManager *utils.StateManager
 }
 
@@ -28,24 +43,39 @@ func NewManager(session *discordgo.Session, guildID string) *LuaManager {
 	manager := &LuaManager{
 		LuaState:     lua.NewState(),
 		StateManager: sm,
-		Bindings: []bindings.LuaBinding{
+		Bindings:     make(map[string][]bindings.LuaBinding),
+	}
+
+	manager.RegisterBindings(session, guildID)
+
+	// register the bindings
+	manager.RegisterDiscordModule()
+	return manager
+}
+
+// RegisterBindings initializes grouped Lua bindings.
+func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string) {
+	m.Bindings = map[string][]bindings.LuaBinding{
+		"default": {
 			bindings.NewApplicationCommandBinding(session, guildID),
 			bindings.NewInteractionEventBinding(session),
-			&bindings.RunAfterBinding{},
-
-			bindings.NewStateBindingGet(sm),
-			bindings.NewStateBindingSet(sm),
-			bindings.NewStateBindingClear(sm),
-
+		},
+		"timer": {
+			bindings.NewRunAfterBinding(),
+		},
+		"state": {
+			bindings.NewStateBindingGet(m.StateManager),
+			bindings.NewStateBindingSet(m.StateManager),
+			bindings.NewStateBindingClear(m.StateManager),
+		},
+		"message": {
 			bindings.NewMessageBindingAdd(session),
 			bindings.NewMessageBindingEdit(session),
 			bindings.NewMessageBindingDelete(session),
 		},
 	}
 
-	// register the bindings
-	manager.RegisterDiscordModule()
-	return manager
+	slog.Info("Lua bindings registered successfully")
 }
 
 // LoadScripts loads all Lua scripts from the directory specified in the `LUA_SCRIPTS_PATH` environment variable.
@@ -106,25 +136,10 @@ func (m *LuaManager) LoadScripts(path string) error {
 	return nil
 }
 
-// DiscordOptionTypes maps human-readable constants to Discord's option type values.
-var DiscordOptionTypes = map[string]int{
-	"option_subcommand":       1,
-	"option_subcommand_group": 2,
-	"option_string":           3,
-	"option_integer":          4,
-	"option_boolean":          5,
-	"option_user":             6,
-	"option_channel":          7,
-	"option_role":             8,
-	"option_mentionable":      9,
-	"option_number":           10,
-	"option_attachment":       11,
-}
-
-// RegisterDiscordModule creates a custom loader for `require("discord")`
+// RegisterDiscordModule creates a custom loader for `require("driftwood")`
 // and injects the actual Go bindings into the Lua state.
 func (m *LuaManager) RegisterDiscordModule() {
-	// Loader function for `require("discord")`.
+	// Loader function for `require("driftwood")`.
 	discordLoader := func(L *lua.LState) int {
 		module := L.NewTable()
 
@@ -134,11 +149,29 @@ func (m *LuaManager) RegisterDiscordModule() {
 		}
 
 		// Register the function bindings.
-		for _, binding := range m.Bindings {
-			fn := binding.Register(m.LuaState)
-			L.SetField(module, binding.Name(), fn)
-			slog.Info("Registered binding", "name", binding.Name())
+		for groupName, group := range m.Bindings {
+
+			if groupName == "default" {
+				for _, binding := range group {
+					fn := binding.Register(m.LuaState)
+					L.SetField(module, binding.Name(), fn)
+					slog.Info("Registered binding", "name", binding.Name())
+				}
+
+				continue
+			}
+
+			// Create a sub-table for the group.
+			subTable := L.NewTable()
+			for _, binding := range group {
+				fn := binding.Register(m.LuaState)
+				L.SetField(subTable, binding.Name(), fn)
+				slog.Info("Registered binding", "name", binding.Name())
+			}
+			L.SetField(module, groupName, subTable)
 		}
+
+		addLogging(L, module)
 
 		L.Push(module)
 		return 1
@@ -148,15 +181,37 @@ func (m *LuaManager) RegisterDiscordModule() {
 	m.LuaState.PreloadModule("driftwood", discordLoader)
 }
 
+func addLogging(L *lua.LState, module *lua.LTable) {
+
+	logTable := L.NewTable()
+
+	L.SetField(logTable, "debug", L.NewFunction(func(L *lua.LState) int {
+		slog.Debug("Lua debug", "message", L.CheckString(1))
+		return 0
+	}))
+	L.SetField(logTable, "info", L.NewFunction(func(L *lua.LState) int {
+		slog.Info("Lua info", "message", L.CheckString(1))
+		return 0
+	}))
+	L.SetField(logTable, "error", L.NewFunction(func(L *lua.LState) int {
+		slog.Error("Lua error", "message", L.CheckString(1))
+		return 0
+	}))
+
+	L.SetField(module, "log", logTable)
+}
+
 func (m *LuaManager) HandleCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	// Route the command to the ApplicationCommandBinding.
-	for idx := range m.Bindings {
-		if m.Bindings[idx].CanHandleInteraction(i) {
-			slog.Debug("Binding matched for interaction", "binding", m.Bindings[idx].Name())
-			if err := m.Bindings[idx].HandleInteraction(m.LuaState, i); err == nil {
-				return // Command was handled successfully
-			} else {
-				slog.Warn("Error handling interaction with binding", "binding", m.Bindings[idx].Name(), "error", err)
+	for groupIdx := range m.Bindings {
+		for idx := range m.Bindings[groupIdx] {
+			if m.Bindings[groupIdx][idx].CanHandleInteraction(i) {
+				slog.Debug("Binding matched for interaction", "binding", m.Bindings[groupIdx][idx].Name())
+				if err := m.Bindings[groupIdx][idx].HandleInteraction(m.LuaState, i); err == nil {
+					return // Command was handled successfully
+				} else {
+					slog.Warn("Error handling interaction with binding", "binding", m.Bindings[groupIdx][idx].Name(), "error", err)
+				}
 			}
 		}
 	}

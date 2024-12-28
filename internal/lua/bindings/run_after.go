@@ -12,6 +12,11 @@ import (
 // RunAfterBinding implements the `run_after` Lua function.
 type RunAfterBinding struct{}
 
+// NewRunAfterBinding creates a new RunAfterBinding.
+func NewRunAfterBinding() *RunAfterBinding {
+	return &RunAfterBinding{}
+}
+
 // Name returns the name of the binding for global registration in Lua.
 func (b *RunAfterBinding) Name() string {
 	return "run_after"

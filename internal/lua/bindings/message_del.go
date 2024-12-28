@@ -23,7 +23,7 @@ func NewMessageBindingDelete(session *discordgo.Session) *MessageBindingDelete {
 
 // Name returns the name of the binding.
 func (b *MessageBindingDelete) Name() string {
-	return "delete_message"
+	return "delete"
 }
 
 // Register registers the message-related functions in the Lua state.

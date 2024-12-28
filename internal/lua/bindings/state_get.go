@@ -23,7 +23,7 @@ func NewStateBindingGet(sm *utils.StateManager) *StateBindingGet {
 
 // Name returns the name of the binding for global registration in Lua.
 func (b *StateBindingGet) Name() string {
-	return "state_get"
+	return "get"
 }
 
 // Register adds the state-related functions to the Lua state.

@@ -24,7 +24,7 @@ func NewMessageBindingAdd(session *discordgo.Session) *MessageBindingAdd {
 
 // Name returns the name of the binding.
 func (b *MessageBindingAdd) Name() string {
-	return "add_message"
+	return "add"
 }
 
 // Register registers the message-related functions in the Lua state.

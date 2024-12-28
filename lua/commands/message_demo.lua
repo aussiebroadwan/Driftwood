@@ -8,7 +8,7 @@ local function handle_message_demo(interaction)
     local state_key = "message_demo_state_" .. interaction.interaction_id
 
     -- Step 1: Add a message to the channel.
-    local message_id = discord.add_message(interaction.channel_id, "Initial message! Updating soon...", {
+    local message_id = discord.message.add(interaction.channel_id, "Initial message! Updating soon...", {
         { type = "button", label = "Click me", custom_id = "example_button" }, 
     })
 
@@ -18,21 +18,21 @@ local function handle_message_demo(interaction)
     end
 
     -- Store the message ID and channel ID in the state.
-    discord.state_set(state_key, { message_id = message_id, channel_id = interaction.channel_id })
+    discord.state.set(state_key, { message_id = message_id, channel_id = interaction.channel_id })
 
     -- Step 2: Reply with an ephemeral confirmation.
     interaction:reply("Message sent! It will be updated and deleted shortly.", { ephemeral = true })
 
     -- Step 3: Schedule an edit after 5 seconds.
-    discord.run_after(function()
+    discord.timer.run_after(function()
         -- Retrieve the stored message details from the state.
-        local message_state = discord.state_get(state_key)
+        local message_state = discord.state.get(state_key)
         if not message_state then
             print("Message state not found. Skipping edit.")
             return
         end
 
-        local success = discord.edit_message(message_state.message_id, message_state.channel_id, "This is the updated content!", {
+        local success = discord.message.edit(message_state.message_id, message_state.channel_id, "This is the updated content!", {
             { type = "button", label = "Updated button", custom_id = "updated_button"}, 
         })
 
@@ -44,19 +44,19 @@ local function handle_message_demo(interaction)
     -- Step 4: Schedule a deletion after 10 seconds.
     discord.run_after(function()
         -- Retrieve the stored message details from the state.
-        local message_state = discord.state_get(state_key)
+        local message_state = discord.state.get(state_key)
         if not message_state then
             print("Message state not found. Skipping deletion.")
             return
         end
 
-        local success = discord.delete_message(message_state.message_id, message_state.channel_id)
+        local success = discord.message.delete(message_state.message_id, message_state.channel_id)
         if not success then
             print("Failed to delete the message.")
         end
 
         -- Clear the state after the message is deleted.
-        discord.state_clear(state_key)
+        discord.state.clear(state_key)
     end, 10)
 end
 
