@@ -218,13 +218,3 @@ func (b *ApplicationCommandBinding) buildOptionsTable(L *lua.LState, T *lua.LTab
 	}
 	return T
 }
-
-// replyFunction returns a Lua function for replying to interactions.
-func (b *ApplicationCommandBinding) replyFunction(interaction *discordgo.InteractionCreate) lua.LGFunction {
-	return utils.ReplyFunction(b.Session, interaction)
-}
-
-// replyWithActionFunction returns a Lua function for replying to interactions.
-func (b *ApplicationCommandBinding) replyWithActionFunction(interaction *discordgo.InteractionCreate) lua.LGFunction {
-	return utils.ReplyWithActionFunction(b.Session, interaction)
-}
