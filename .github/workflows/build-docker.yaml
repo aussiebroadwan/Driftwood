@@ -1,35 +1,22 @@
-
-name: Publish Docker Image
+name: Build Docker Image
 
 on:
-    push:
-      branches:
-        - main
-    pull_request:
-      branches:
-        - main
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  push_to_registries:
-    name: Push Docker image to multiple registries
+  build:
+    name: Build Docker Image
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-    
-      - name: 'Build Inventory Image'
+      - name: Build Docker Image
         run: |
-            docker build . --tag ghcr.io/lcox74/driftwood:latest
-            docker push ghcr.io/lcox74/driftwood:latest
+          docker build . --tag ghcr.io/lcox74/driftwood:latest
