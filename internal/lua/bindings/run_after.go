@@ -37,7 +37,6 @@ func (b *RunAfterBinding) Register(L *lua.LState) *lua.LFunction {
 			time.Sleep(time.Duration(float64(delaySeconds) * float64(time.Second)))
 
 			// Lock the Lua state for execution
-			L.DoString(fmt.Sprintf("require('debug').setmetatable(require('global_name'))"))
 			if err := L.CallByParam(lua.P{
 				Fn:      L.GetGlobal(globalName), // Retrieve the function by global name
 				NRet:    0,                       // No return values

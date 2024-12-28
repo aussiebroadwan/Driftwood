@@ -12,23 +12,31 @@ import (
 	lua "github.com/yuin/gopher-lua"
 
 	"driftwood/internal/lua/bindings"
+	"driftwood/internal/lua/utils"
 )
 
 // LuaManager handles loading and executing Lua scripts and binding them to Discord commands/events.
 type LuaManager struct {
-	LuaState *lua.LState // The Lua VM state
-	Bindings []bindings.LuaBinding
+	LuaState     *lua.LState // The Lua VM state
+	Bindings     []bindings.LuaBinding
+	StateManager *utils.StateManager
 }
 
 // NewManager creates a new LuaManager with the given session and Guild ID.
 func NewManager(session *discordgo.Session, guildID string) *LuaManager {
+	sm := utils.NewStateManager()
 	manager := &LuaManager{
-		LuaState: lua.NewState(),
+		LuaState:     lua.NewState(),
+		StateManager: sm,
 		Bindings: []bindings.LuaBinding{
 			bindings.NewApplicationCommandBinding(session, guildID),
 			bindings.NewInteractionEventBinding(session),
 			&bindings.RunAfterBinding{},
-			// Add more bindings here as needed.
+
+			bindings.NewStateBindingGet(sm),
+			bindings.NewStateBindingSet(sm),
+			bindings.NewStateBindingClear(sm),
+			// Dont put state bindings here, they are handled differently
 		},
 	}
 
