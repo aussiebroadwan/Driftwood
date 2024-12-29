@@ -1,8 +1,8 @@
 local driftwood = require("driftwood")
 
 --- Handles the /message_demo command
--- Demonstrates adding, editing, and deleting a message with state management.
--- @param interaction table The interaction object from Discord.
+--- Demonstrates adding, editing, and deleting a message with state management.
+--- @param interaction CommandInteraction The interaction object from Discord.
 local function handle_message_demo(interaction)
     -- State key for storing message details
     local state_key = "message_demo_state_" .. interaction.interaction_id
@@ -62,19 +62,23 @@ local function handle_message_demo(interaction)
     end, 10)
 end
 
--- Register the /message_demo command.
-driftwood.register_application_command({
-    name = "message_demo",
-    description = "Demonstrates message lifecycle: add, edit, delete with state management",
-    handler = handle_message_demo
-})
-
--- Register the interaction to handle "md:button:value".
-driftwood.register_interaction("md:button:(?P<value>\\w+)", function(interaction)
+--- Handles the "md:button:value" interaction.
+--- @param interaction EventInteraction The interaction object from Discord.
+local function handle_button_click(interaction)
     local value = interaction.data.value
     if value then
         interaction:reply("Button clicked with value: " .. value, { ephemeral = true })
     else
         interaction:reply("No value found in the interaction.", { ephemeral = true })
     end
-end)
+end
+
+--- Register the /message_demo command.
+driftwood.register_application_command({
+    name = "message_demo",
+    description = "Demonstrates message lifecycle: add, edit, delete with state management",
+    handler = handle_message_demo
+})
+
+--- Register the interaction to handle "md:button:value".
+driftwood.register_interaction("md:button:(?P<value>\\w+)", handle_button_click)

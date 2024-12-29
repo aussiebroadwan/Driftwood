@@ -24,6 +24,8 @@ docker pull ghcr.io/lcox74/driftwood:latest
 
 Set up a directory for your Lua scripts on your host machine (e.g., `./lua`). Add command scripts to this directory following the structure explained in the Creating Commands section.
 
+> **Tip**: For better development experience, place the `driftwood.lua` file in your `./lua` directory. This file provides type annotations and documentation, helping with IDE autocomplete and type checking.
+
 ### Step 3: Run the Docker Container
 
 Run the container with the required environment variables and mount your Lua script directory:

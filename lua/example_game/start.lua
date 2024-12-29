@@ -1,9 +1,9 @@
 local driftwood = require("driftwood")
 
 --- Sends a delayed message every 5 seconds, up to 5 times.
--- Increments a counter and prints a message. If the counter is less than 5, schedules another message.
+--- Increments a counter and prints a message. If the counter is less than 5, schedules another message.
 local function delayed_message()
-    data = driftwood.state.get("game_data") -- Retrieve game data from the state
+    local data = driftwood.state.get("game_data") -- Retrieve game data from the state
 
     -- Check if the game data is missing
     if data == nil then
@@ -27,8 +27,8 @@ local function delayed_message()
 end
 
 --- Defines the "start" subcommand.
--- Starts a new game and schedules the first delayed message.
--- @param interaction table The interaction object from Discord.
+--- Starts a new game and schedules the first delayed message.
+--- @param interaction CommandInteraction The interaction object from Discord.
 local function handle_start_command(interaction)
     -- Respond to the user to indicate the game has started
     interaction:reply("Game started!")
@@ -38,7 +38,8 @@ local function handle_start_command(interaction)
     driftwood.timer.run_after(delayed_message, 5)
 end
 
--- Define the "start" subcommand metadata
+--- Define the "start" subcommand metadata
+--- @type CommandOption
 local start_subcommand = {
     name = "start",                     -- Subcommand name
     description = "Start a new game",   -- Subcommand description

@@ -1,7 +1,7 @@
 local driftwood = require("driftwood")
 
 --- Handles the "join" subcommand with arguments and options.
--- @param interaction table The interaction object from Discord.
+--- @param interaction CommandInteraction The interaction object from Discord.
 local function handle_join(interaction)
     -- Retrieve arguments from the interaction.
     local game_id = interaction.options.game_id
@@ -14,6 +14,8 @@ local function handle_join(interaction)
     interaction:reply(response, { ephemeral = true, mention = mention })
 end
 
+--- Define the "join" subcommand metadata.
+--- @type CommandOption
 local join_command =  {
     name = "join",
     description = "Join an existing game",
