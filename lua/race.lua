@@ -1,4 +1,4 @@
-local discord = require("driftwood")
+local driftwood = require("driftwood")
 
 -- Define the custom ID for the "Join" button.
 local button_id = "example_race_join"
@@ -9,11 +9,7 @@ local button_id = "example_race_join"
 local function handle_race_command(interaction)
     -- Respond with a message and a "Join" button.
     interaction:reply_with_action("Join the race!", {
-        {
-            type = "button",      -- Action type: Button
-            label = "Join",       -- Label displayed on the button
-            custom_id = button_id, -- Custom ID for interaction tracking
-        },
+        driftwood.new_button("Join", button_id), 
     })
 end
 
@@ -26,11 +22,11 @@ local function handle_race_join_interaction(interaction)
 end
 
 -- Register the "race" application command.
-discord.register_application_command({
+driftwood.register_application_command({
     name = "race",               -- Command name
     description = "Manage a snail race", -- Command description
     handler = handle_race_command, -- Link to the handler function
 })
 
 -- Register the "example_race_join" interaction for the "Join" button.
-discord.register_interaction(button_id, handle_race_join_interaction)
+driftwood.register_interaction(button_id, handle_race_join_interaction)

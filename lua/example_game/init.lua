@@ -1,11 +1,11 @@
-local discord = require("driftwood")
+local driftwood = require("driftwood")
 
 -- Import subcommands.
 local start_subcommand = require("example_game.start")
 local join_subcommand = require("example_game.join")
 
 -- Register the "game" command with subcommands and arguments.
-discord.register_application_command({
+driftwood.register_application_command({
     name = "game",
     description = "Manage and play games",
     options = {

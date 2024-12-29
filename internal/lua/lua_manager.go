@@ -59,6 +59,7 @@ func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string
 		"default": {
 			bindings.NewApplicationCommandBinding(session, guildID),
 			bindings.NewInteractionEventBinding(session),
+			bindings.NewNewButtonBinding(),
 		},
 		"timer": {
 			bindings.NewRunAfterBinding(),
@@ -72,6 +73,11 @@ func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string
 			bindings.NewMessageBindingAdd(session),
 			bindings.NewMessageBindingEdit(session),
 			bindings.NewMessageBindingDelete(session),
+		},
+		"option": {
+			bindings.NewNewOptionStringBinding(),
+			bindings.NewNewOptionNumberBinding(),
+			bindings.NewNewOptionBoolBinding(),
 		},
 	}
 

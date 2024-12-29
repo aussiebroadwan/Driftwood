@@ -1,4 +1,4 @@
-local discord = require("driftwood")
+local driftwood = require("driftwood")
 
 --- Handles the "join" subcommand with arguments and options.
 -- @param interaction table The interaction object from Discord.
@@ -17,20 +17,10 @@ end
 local join_command =  {
     name = "join",
     description = "Join an existing game",
-    type = discord.option_subcommand,
+    type = driftwood.option_subcommand,
     options = {
-        {
-            name = "game_id",
-            description = "ID of the game to join",
-            type = discord.option_string,
-            required = true,
-        },
-        {
-            name = "mention",
-            description = "Mention the user in the response",
-            type = discord.option_boolean,
-            required = false,
-        }
+        driftwood.option.new_string("game_id", "ID of the game to join", true),
+        driftwood.option.new_bool("mention", "Mention the user in the response"),
     },
     handler = handle_join,
 }
