@@ -81,10 +81,10 @@ Driftwood supports both single-file and modular command structures.
 ```lua
 -- file: lua/commands/ping.lua
 
-local discord = require("driftwood")
+local driftwood = require("driftwood")
 
 -- Register the /ping command
-discord.register_application_command({
+driftwood.register_application_command({
     name = "ping",
     description = "Check bot responsiveness",
     handler = function(interaction)
@@ -101,14 +101,14 @@ In this the command entry point is the `init.lua` file.
 ```lua
 -- file: lua/commands/example_game/init.lua
 
-local discord = require("driftwood")
+local driftwood = require("driftwood")
 
 -- Import subcommands.
 local start_subcommand = require("commands.example_game.start")
 local join_subcommand = require("commands.example_game.join")
 
 -- Register the "game" command.
-discord.register_application_command({
+driftwood.register_application_command({
     name = "game",
     description = "Manage and play games",
     options = {
@@ -124,12 +124,12 @@ discord.register_application_command({
 ```lua
 -- file: lua/commands/example_game/start.lua
 
-local discord = require("driftwood")
+local driftwood = require("driftwood")
 
 return {
     name = "start",
     description = "Start a new game",
-    type = discord.option_subcommand,
+    type = driftwood.option_subcommand,
     handler = function(interaction)
         interaction:reply("Game started!")
     end,
@@ -140,25 +140,15 @@ return {
 ```lua
 -- file: lua/commands/example_game/join.lua
 
-local discord = require("driftwood")
+local driftwood = require("driftwood")
 
 return {
     name = "join",
     description = "Join an existing game",
-    type = discord.option_subcommand,
+    type = driftwood.option_subcommand,
     options = {
-        {
-            name = "game_id",
-            description = "ID of the game to join",
-            type = discord.option_string,
-            required = true,
-        },
-        {
-            name = "mention",
-            description = "Mention the user in the response",
-            type = discord.option_boolean,
-            required = false,
-        },
+        driftwood.option.new_string("game_id", "ID of the game to join", true),
+        driftwood.option.new_bool("mention", "Mention the user in the response"),
     },
     handler = function(interaction)
         local game_id = interaction.options.game_id
