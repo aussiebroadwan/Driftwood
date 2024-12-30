@@ -17,7 +17,7 @@ To quickly create your own Discord bot using Driftwood, you can use the prebuilt
 ### Step 1: Pull the Docker Image
 
 ```bash
-docker pull ghcr.io/lcox74/driftwood:latest
+docker pull ghcr.io/lcox74/driftwood:v1.0.1
 ```
 
 ### Step 2: Prepare Your Lua Scripts
