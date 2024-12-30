@@ -29,12 +29,13 @@ func (b *NewButtonBinding) Register(L *lua.LState) *lua.LFunction {
 		if argCount == 2 {
 			buttonTable.RawSetString("label", lua.LString(L.CheckString(1)))
 			buttonTable.RawSetString("custom_id", lua.LString(L.CheckString(2)))
+			buttonTable.RawSetString("disabled", lua.LFalse)
 		} else if argCount == 3 {
 			buttonTable.RawSetString("label", lua.LString(L.CheckString(1)))
 			buttonTable.RawSetString("custom_id", lua.LString(L.CheckString(2)))
-			buttonTable.RawSetString("style", lua.LString(L.CheckString(3)))
+			buttonTable.RawSetString("disabled", lua.LBool(L.CheckBool(3)))
 		} else {
-			L.ArgError(1, "invalid arguments, expected (name, custom_id [, style])")
+			L.ArgError(1, "invalid arguments, expected (name, custom_id [, disabled])")
 		}
 
 		// Create a Table for the button

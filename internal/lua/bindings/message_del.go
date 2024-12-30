@@ -15,7 +15,7 @@ type MessageBindingDelete struct {
 
 // NewMessageBindingDelete initializes a new message management instance.
 func NewMessageBindingDelete(session *discordgo.Session) *MessageBindingDelete {
-	slog.Info("Creating new MessageBindingDel")
+	slog.Debug("Creating new MessageBindingDel")
 	return &MessageBindingDelete{
 		Session: session,
 	}

@@ -14,6 +14,7 @@ type RunAfterBinding struct{}
 
 // NewRunAfterBinding creates a new RunAfterBinding.
 func NewRunAfterBinding() *RunAfterBinding {
+	slog.Debug("Creating new RunAfterBinding")
 	return &RunAfterBinding{}
 }
 

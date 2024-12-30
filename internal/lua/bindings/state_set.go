@@ -15,7 +15,7 @@ type StateBindingSet struct {
 
 // NewStateBindingSet initializes a new state management instance.
 func NewStateBindingSet(sm *utils.StateManager) *StateBindingSet {
-	slog.Info("Creating new StateBindingSet")
+	slog.Debug("Creating new StateBindingSet")
 	return &StateBindingSet{
 		StateManager: sm,
 	}

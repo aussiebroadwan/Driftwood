@@ -18,7 +18,7 @@ type ApplicationCommandBinding struct {
 
 // NewApplicationCommandBinding initializes a new ApplicationCommandBinding.
 func NewApplicationCommandBinding(session *discordgo.Session, guildID string) *ApplicationCommandBinding {
-	slog.Info("Creating new ApplicationCommandBinding")
+	slog.Debug("Creating new ApplicationCommandBinding")
 	return &ApplicationCommandBinding{
 		Session:  session,
 		GuildID:  guildID,

@@ -23,10 +23,17 @@ func ParseComponents(_ *lua.LState, table *lua.LTable) ([]discordgo.MessageCompo
 			label := componentTable.RawGetString("label").String()
 			customID := componentTable.RawGetString("custom_id").String()
 
+			disabled := false
+			disabledRaw := componentTable.RawGetString("disabled")
+			if disabledRaw.Type() == lua.LTBool {
+				disabled = lua.LVAsBool(disabledRaw)
+			}
+
 			components = append(components, discordgo.Button{
 				Label:    label,
 				CustomID: customID,
 				Style:    discordgo.PrimaryButton, // Default style
+				Disabled: disabled,
 			})
 		default:
 			return

@@ -52,6 +52,7 @@ local driftwood = {
 --- @field type string The type of component (e.g., "button").
 --- @field label string The label text for the component.
 --- @field custom_id string The custom ID for the component.
+--- @field disabled? boolean Optional flag to disable the component.
 --- @field style? number Optional style value for buttons.
 
 --- Command class for defining application commands.
@@ -113,8 +114,9 @@ function driftwood.log.error(message) end
 --- Create a new instance of a button in an action row.
 --- @param label string The label text for the button.
 --- @param custom_id string The custom ID for the button.
+--- @param disabled? boolean Optional flag to disable the button.
 --- @return InteractionComponents button The new button component.
-function driftwood.new_button(label, custom_id) end
+function driftwood.new_button(label, custom_id, disabled) end
 
 --- Options Functions
 

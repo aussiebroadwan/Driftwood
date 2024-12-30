@@ -16,7 +16,7 @@ type MessageBindingAdd struct {
 
 // NewMessageBindingAdd initializes a new message management instance.
 func NewMessageBindingAdd(session *discordgo.Session) *MessageBindingAdd {
-	slog.Info("Creating new MessageBindingAdd")
+	slog.Debug("Creating new MessageBindingAdd")
 	return &MessageBindingAdd{
 		Session: session,
 	}

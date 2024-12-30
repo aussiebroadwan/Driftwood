@@ -15,7 +15,7 @@ type StateBindingClear struct {
 
 // NewStateBindingClear initializes a new state management instance.
 func NewStateBindingClear(sm *utils.StateManager) *StateBindingClear {
-	slog.Info("Creating new StateBindingClear")
+	slog.Debug("Creating new StateBindingClear")
 	return &StateBindingClear{
 		StateManager: sm,
 	}

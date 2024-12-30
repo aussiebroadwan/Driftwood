@@ -12,6 +12,7 @@ type NewOptionBoolBinding struct{}
 
 // NewNewOptionBoolBinding initializes a new NewOptionBoolBinding.
 func NewNewOptionBoolBinding() *NewOptionBoolBinding {
+	slog.Debug("Creating new NewOptionBoolBinding")
 	return &NewOptionBoolBinding{}
 }
 

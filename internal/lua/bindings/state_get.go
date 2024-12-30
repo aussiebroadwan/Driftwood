@@ -15,7 +15,7 @@ type StateBindingGet struct {
 
 // NewStateBindingGet initializes a new state management instance.
 func NewStateBindingGet(sm *utils.StateManager) *StateBindingGet {
-	slog.Info("Creating new StateBindingGet")
+	slog.Debug("Creating new StateBindingGet")
 	return &StateBindingGet{
 		StateManager: sm,
 	}

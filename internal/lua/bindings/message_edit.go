@@ -16,7 +16,7 @@ type MessageBindingEdit struct {
 
 // NewMessageBindingEdit initializes a new message management instance.
 func NewMessageBindingEdit(session *discordgo.Session) *MessageBindingEdit {
-	slog.Info("Creating new MessageBindingEdit")
+	slog.Debug("Creating new MessageBindingEdit")
 	return &MessageBindingEdit{
 		Session: session,
 	}

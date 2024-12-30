@@ -12,6 +12,7 @@ type NewOptionNumberBinding struct{}
 
 // NewNewOptionNumberBinding initializes a new NewOptionNumberBinding.
 func NewNewOptionNumberBinding() *NewOptionNumberBinding {
+	slog.Debug("Creating new NewOptionNumberBinding")
 	return &NewOptionNumberBinding{}
 }
 

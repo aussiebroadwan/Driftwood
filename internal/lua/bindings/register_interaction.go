@@ -19,7 +19,7 @@ type InteractionEventBinding struct {
 
 // NewInteractionEventBinding initializes a new InteractionEventBinding instance.
 func NewInteractionEventBinding(session *discordgo.Session) *InteractionEventBinding {
-	slog.Info("Creating new InteractionEventBinding")
+	slog.Debug("Creating new InteractionEventBinding")
 	return &InteractionEventBinding{
 		Session:       session,
 		Interactions:  make(map[string]string),

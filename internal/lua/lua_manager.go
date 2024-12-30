@@ -113,7 +113,7 @@ func (m *LuaManager) LoadScripts(path string) error {
 		if info.IsDir() {
 			initFilePath := filepath.Join(path, "init.lua")
 			if _, err := os.Stat(initFilePath); err == nil {
-				slog.Info("Loading Lua module", "path", initFilePath)
+				slog.Debug("Loading Lua module", "path", initFilePath)
 				if loadErr := m.LuaState.DoFile(initFilePath); loadErr != nil {
 					slog.Error("Failed to load Lua module", "path", initFilePath, "error", loadErr)
 					return loadErr
@@ -124,7 +124,7 @@ func (m *LuaManager) LoadScripts(path string) error {
 
 		// Load single-file commands.
 		if filepath.Ext(path) == ".lua" && info.Name() != "init.lua" {
-			slog.Info("Loading Lua script", "path", path)
+			slog.Debug("Loading Lua script", "path", path)
 			if loadErr := m.LuaState.DoFile(path); loadErr != nil {
 				slog.Error("Failed to load Lua script", "path", path, "error", loadErr)
 				return loadErr
