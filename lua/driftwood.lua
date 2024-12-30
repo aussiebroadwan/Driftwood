@@ -16,10 +16,19 @@ local driftwood = {
 
 --- Classes
 
+--- User Interaction class 
+--- @class User
+--- @field id string The unique ID of the user.
+--- @field username string The username of the user.
+--- @field global_name string The global name of the user.
+--- @field discriminator string The discriminator of the user.
+--- @field avatar string The avatar URL of the user.
+
 --- Base Interaction class for handling interactions.
 --- @class InteractionBase
 --- @field interaction_id string The unique ID of the interaction.
 --- @field channel_id string The ID of the channel where the interaction occurred.
+--- @field user User The user who triggered the interaction.
 --- @field reply fun(self: InteractionBase, content: string, options?: InteractionReplyOptions) Replies to the interaction.
 --- @field reply_with_action fun(self: InteractionBase, content: string, components: InteractionComponents[], options?: InteractionReplyOptions) Replies with action components (e.g., buttons).
 
