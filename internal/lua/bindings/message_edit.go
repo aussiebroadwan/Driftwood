@@ -15,16 +15,18 @@ type MessageBindingEdit struct {
 }
 
 // NewMessageBindingEdit initializes a new message management instance.
-func NewMessageBindingEdit(session *discordgo.Session) *MessageBindingEdit {
+func NewMessageBindingEdit() *MessageBindingEdit {
 	slog.Debug("Creating new MessageBindingEdit")
-	return &MessageBindingEdit{
-		Session: session,
-	}
+	return &MessageBindingEdit{}
 }
 
 // Name returns the name of the binding.
 func (b *MessageBindingEdit) Name() string {
 	return "edit"
+}
+
+func (b *MessageBindingEdit) SetSession(session *discordgo.Session) {
+	b.Session = session
 }
 
 // Register registers the message-related functions in the Lua state.

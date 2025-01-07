@@ -18,10 +18,9 @@ type InteractionEventBinding struct {
 }
 
 // NewInteractionEventBinding initializes a new InteractionEventBinding instance.
-func NewInteractionEventBinding(session *discordgo.Session) *InteractionEventBinding {
+func NewInteractionEventBinding() *InteractionEventBinding {
 	slog.Debug("Creating new InteractionEventBinding")
 	return &InteractionEventBinding{
-		Session:       session,
 		Interactions:  make(map[string]string),
 		RegexHandlers: make(map[*regexp.Regexp]string),
 	}
@@ -30,6 +29,10 @@ func NewInteractionEventBinding(session *discordgo.Session) *InteractionEventBin
 // Name returns the name of the Lua function for this binding.
 func (b *InteractionEventBinding) Name() string {
 	return "register_interaction"
+}
+
+func (b *InteractionEventBinding) SetSession(session *discordgo.Session) {
+	b.Session = session
 }
 
 // Register adds the `register_interaction` function to Lua.

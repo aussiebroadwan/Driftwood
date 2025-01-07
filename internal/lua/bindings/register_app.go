@@ -14,21 +14,32 @@ type ApplicationCommandBinding struct {
 	Session  *discordgo.Session
 	GuildID  string
 	Commands map[string]string // Maps command names to Lua global handler names
+
+	waitRegister []func(*discordgo.Session)
 }
 
 // NewApplicationCommandBinding initializes a new ApplicationCommandBinding.
-func NewApplicationCommandBinding(session *discordgo.Session, guildID string) *ApplicationCommandBinding {
+func NewApplicationCommandBinding(guildID string) *ApplicationCommandBinding {
 	slog.Debug("Creating new ApplicationCommandBinding")
 	return &ApplicationCommandBinding{
-		Session:  session,
-		GuildID:  guildID,
-		Commands: make(map[string]string),
+		GuildID:      guildID,
+		Commands:     make(map[string]string),
+		waitRegister: []func(*discordgo.Session){},
 	}
 }
 
 // Name returns the name of the Lua global table for this binding.
 func (b *ApplicationCommandBinding) Name() string {
 	return "register_application_command"
+}
+
+func (b *ApplicationCommandBinding) SetSession(session *discordgo.Session) {
+	slog.Info("Setting session for ApplicationCommandBinding")
+	b.Session = session
+
+	for _, f := range b.waitRegister {
+		f(session)
+	}
 }
 
 // Register adds the `register_application_command` function to a Lua table.
@@ -73,6 +84,15 @@ func (b *ApplicationCommandBinding) Register(L *lua.LState) *lua.LFunction {
 			Name:        name.String(),
 			Description: description.String(),
 			Options:     commandOptions,
+		}
+
+		if b.Session == nil {
+			b.waitRegister = append(b.waitRegister, func(session *discordgo.Session) {
+				if _, err := session.ApplicationCommandCreate(session.State.User.ID, b.GuildID, appCmd); err != nil {
+					L.RaiseError("failed to register command '%s' with Discord: %s", name, err.Error())
+				}
+			})
+			return 0
 		}
 
 		if _, err := b.Session.ApplicationCommandCreate(b.Session.State.User.ID, b.GuildID, appCmd); err != nil {

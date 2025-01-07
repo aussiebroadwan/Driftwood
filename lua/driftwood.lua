@@ -12,6 +12,7 @@ local driftwood = {
     log = {},
     option = {},
     message = {},
+    channel = {},
 }
 
 --- Classes
@@ -164,6 +165,14 @@ function driftwood.message.edit(message_id, channel_id, content, components) end
 --- @return boolean success Whether the deletion was successful.
 function driftwood.message.delete(message_id, channel_id) end
 
+
+--- Channel Functions
+
+--- Get a channel by name.
+--- @param channel_name string The name of the channel.
+--- @return string|nil channel_id The ID of the channel, or nil if not found.
+function driftwood.channel.get(channel_name) end
+
 --- Command Registration
 
 --- Register an application command.
@@ -175,7 +184,11 @@ function driftwood.register_application_command(command) end
 --- @param handler fun(interaction: EventInteraction) The handler function for the interaction.
 function driftwood.register_interaction(custom_id, handler) end
 
---- Discord Option Types
+
+--- Register an On Ready event handler.
+--- @param custom_id string The custom ID or regex for the interaction.
+--- @param handler fun() The handler function for the interaction.
+function driftwood.on_ready(custom_id, handler) end
 
 --- Enum for Discord application command option types.
 --- @enum

@@ -34,6 +34,7 @@ var DiscordOptionTypes = map[string]int{
 type LuaManager struct {
 	LuaState     *lua.LState // The Lua VM state
 	Bindings     map[string][]bindings.LuaBinding
+	OnReadyCbs   []string
 	StateManager *utils.StateManager
 }
 
@@ -44,6 +45,7 @@ func NewManager(session *discordgo.Session, guildID string) *LuaManager {
 		LuaState:     lua.NewState(),
 		StateManager: sm,
 		Bindings:     make(map[string][]bindings.LuaBinding),
+		OnReadyCbs:   make([]string, 0),
 	}
 
 	manager.RegisterBindings(session, guildID)
@@ -57,8 +59,8 @@ func NewManager(session *discordgo.Session, guildID string) *LuaManager {
 func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string) {
 	m.Bindings = map[string][]bindings.LuaBinding{
 		"default": {
-			bindings.NewApplicationCommandBinding(session, guildID),
-			bindings.NewInteractionEventBinding(session),
+			bindings.NewApplicationCommandBinding(guildID),
+			bindings.NewInteractionEventBinding(),
 			bindings.NewNewButtonBinding(),
 		},
 		"timer": {
@@ -70,14 +72,17 @@ func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string
 			bindings.NewStateBindingClear(m.StateManager),
 		},
 		"message": {
-			bindings.NewMessageBindingAdd(session),
-			bindings.NewMessageBindingEdit(session),
-			bindings.NewMessageBindingDelete(session),
+			bindings.NewMessageBindingAdd(),
+			bindings.NewMessageBindingEdit(),
+			bindings.NewMessageBindingDelete(),
 		},
 		"option": {
 			bindings.NewNewOptionStringBinding(),
 			bindings.NewNewOptionNumberBinding(),
 			bindings.NewNewOptionBoolBinding(),
+		},
+		"channel": {
+			bindings.NewChannelBindingGet(guildID),
 		},
 	}
 
@@ -174,8 +179,22 @@ func (m *LuaManager) RegisterDiscordModule() {
 				L.SetField(subTable, binding.Name(), fn)
 				slog.Info("Registered binding", "name", binding.Name())
 			}
+
 			L.SetField(module, groupName, subTable)
 		}
+
+		L.SetField(module, "on_ready", L.NewFunction(func(L *lua.LState) int {
+			customID := L.CheckString(1)  // First argument is the custom_id or regex pattern
+			handler := L.CheckFunction(2) // Second argument is the handler function
+
+			// Create a global function name for the handler
+			globalName := fmt.Sprintf("on_ready_handler_%s", customID)
+
+			// Set the Lua function as a global
+			L.SetGlobal(globalName, handler)
+			m.OnReadyCbs = append(m.OnReadyCbs, globalName)
+			return 0
+		}))
 
 		addLogging(L, module)
 
@@ -223,4 +242,33 @@ func (m *LuaManager) HandleCommand(s *discordgo.Session, i *discordgo.Interactio
 	}
 
 	slog.Warn("Command binding not found", "interaction_id", i.ID)
+}
+
+func (m *LuaManager) ReadyHandler(s *discordgo.Session, r *discordgo.Ready) {
+	slog.Info("Handling ready event")
+	m.setSession(s)
+	for _, cb := range m.OnReadyCbs {
+		fn := m.LuaState.GetGlobal(cb)
+		if fn == lua.LNil {
+			slog.Error("Lua on_ready handler not found", "handler", cb)
+			continue
+		}
+
+		err := m.LuaState.CallByParam(lua.P{
+			Fn:      fn,
+			NRet:    0,
+			Protect: true,
+		})
+		if err != nil {
+			slog.Error("Error executing Lua on_ready handler", "error", err)
+		}
+	}
+}
+
+func (m *LuaManager) setSession(session *discordgo.Session) {
+	for groupIdx := range m.Bindings {
+		for idx := range m.Bindings[groupIdx] {
+			m.Bindings[groupIdx][idx].SetSession(session)
+		}
+	}
 }
