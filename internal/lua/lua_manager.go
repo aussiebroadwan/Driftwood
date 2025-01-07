@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"log/slog"
 
@@ -159,6 +160,9 @@ func (m *LuaManager) RegisterDiscordModule() {
 			module.RawSetString(key, lua.LNumber(value))
 		}
 
+		// Add the on_ready function to the module.
+		m.addReady(L, module)
+
 		// Register the function bindings.
 		for groupName, group := range m.Bindings {
 
@@ -183,19 +187,6 @@ func (m *LuaManager) RegisterDiscordModule() {
 			L.SetField(module, groupName, subTable)
 		}
 
-		L.SetField(module, "on_ready", L.NewFunction(func(L *lua.LState) int {
-			customID := L.CheckString(1)  // First argument is the custom_id or regex pattern
-			handler := L.CheckFunction(2) // Second argument is the handler function
-
-			// Create a global function name for the handler
-			globalName := fmt.Sprintf("on_ready_handler_%s", customID)
-
-			// Set the Lua function as a global
-			L.SetGlobal(globalName, handler)
-			m.OnReadyCbs = append(m.OnReadyCbs, globalName)
-			return 0
-		}))
-
 		addLogging(L, module)
 
 		L.Push(module)
@@ -204,6 +195,20 @@ func (m *LuaManager) RegisterDiscordModule() {
 
 	// Register the loader.
 	m.LuaState.PreloadModule("driftwood", discordLoader)
+}
+
+func (m *LuaManager) addReady(L *lua.LState, module *lua.LTable) {
+	L.SetField(module, "on_ready", L.NewFunction(func(L *lua.LState) int {
+		handler := L.CheckFunction(1) // First argument is the handler function
+
+		// Create a global function name for the handler
+		globalName := fmt.Sprintf("on_ready_handler_%d", time.Now().Unix())
+
+		// Set the Lua function as a global
+		L.SetGlobal(globalName, handler)
+		m.OnReadyCbs = append(m.OnReadyCbs, globalName)
+		return 0
+	}))
 }
 
 func addLogging(L *lua.LState, module *lua.LTable) {
