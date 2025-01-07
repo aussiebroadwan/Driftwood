@@ -12,16 +12,12 @@ import (
 // MessageBindingAdd provides Lua bindings for managing Discord messages.
 type MessageBindingAdd struct {
 	Session *discordgo.Session
-
-	waitRegister []func(*discordgo.Session)
 }
 
 // NewMessageBindingAdd initializes a new message management instance.
 func NewMessageBindingAdd() *MessageBindingAdd {
 	slog.Debug("Creating new MessageBindingAdd")
-	return &MessageBindingAdd{
-		waitRegister: make([]func(*discordgo.Session), 0),
-	}
+	return &MessageBindingAdd{}
 }
 
 // Name returns the name of the binding.

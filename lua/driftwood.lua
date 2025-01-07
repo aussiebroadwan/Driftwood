@@ -12,6 +12,7 @@ local driftwood = {
     log = {},
     option = {},
     message = {},
+    channel = {},
 }
 
 --- Classes
@@ -163,6 +164,14 @@ function driftwood.message.edit(message_id, channel_id, content, components) end
 --- @param channel_id string The ID of the channel containing the message.
 --- @return boolean success Whether the deletion was successful.
 function driftwood.message.delete(message_id, channel_id) end
+
+
+--- Channel Functions
+
+--- Get a channel by name.
+--- @param channel_name string The name of the channel.
+--- @return string|nil channel_id The ID of the channel, or nil if not found.
+function driftwood.channel.get(channel_name) end
 
 --- Command Registration
 

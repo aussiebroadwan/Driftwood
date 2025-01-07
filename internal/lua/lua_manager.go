@@ -81,6 +81,9 @@ func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string
 			bindings.NewNewOptionNumberBinding(),
 			bindings.NewNewOptionBoolBinding(),
 		},
+		"channel": {
+			bindings.NewChannelBindingGet(guildID),
+		},
 	}
 
 	slog.Info("Lua bindings registered successfully")
