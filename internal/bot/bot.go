@@ -38,18 +38,19 @@ func (b *Bot) SetGuildID(guildID string) {
 func (b *Bot) Start(path string) error {
 	slog.Info("Starting bot session")
 
+	// Load Lua scripts and register commands
+	if err := b.loadLuaScripts(path); err != nil {
+		slog.Error("Failed to load Lua scripts", "error", err)
+		return err
+	}
+
 	// Register the command interaction handler
+	b.Session.AddHandler(b.luaMgr.ReadyHandler)
 	b.Session.AddHandler(b.commandHandler)
 
 	// Open the session
 	if err := b.Session.Open(); err != nil {
 		slog.Error("Failed to open Discord session", "error", err)
-		return err
-	}
-
-	// Load Lua scripts and register commands
-	if err := b.loadLuaScripts(path); err != nil {
-		slog.Error("Failed to load Lua scripts", "error", err)
 		return err
 	}
 

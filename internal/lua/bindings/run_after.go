@@ -23,6 +23,8 @@ func (b *RunAfterBinding) Name() string {
 	return "run_after"
 }
 
+func (b *RunAfterBinding) SetSession(session *discordgo.Session) {}
+
 // Register creates the `run_after` Lua function and adds it to the Lua state.
 func (b *RunAfterBinding) Register(L *lua.LState) *lua.LFunction {
 	return L.NewFunction(func(L *lua.LState) int {

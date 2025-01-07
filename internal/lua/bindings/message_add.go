@@ -12,19 +12,25 @@ import (
 // MessageBindingAdd provides Lua bindings for managing Discord messages.
 type MessageBindingAdd struct {
 	Session *discordgo.Session
+
+	waitRegister []func(*discordgo.Session)
 }
 
 // NewMessageBindingAdd initializes a new message management instance.
-func NewMessageBindingAdd(session *discordgo.Session) *MessageBindingAdd {
+func NewMessageBindingAdd() *MessageBindingAdd {
 	slog.Debug("Creating new MessageBindingAdd")
 	return &MessageBindingAdd{
-		Session: session,
+		waitRegister: make([]func(*discordgo.Session), 0),
 	}
 }
 
 // Name returns the name of the binding.
 func (b *MessageBindingAdd) Name() string {
 	return "add"
+}
+
+func (b *MessageBindingAdd) SetSession(session *discordgo.Session) {
+	b.Session = session
 }
 
 // Register registers the message-related functions in the Lua state.
@@ -43,6 +49,8 @@ func (b *MessageBindingAdd) Register(L *lua.LState) *lua.LFunction {
 				return 0
 			}
 		}
+
+		slog.Info("Sending message", "channel_id", channelID, "content", content, "components", parsedComponents)
 
 		message, err := b.Session.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 			Content:    content,

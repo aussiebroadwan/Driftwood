@@ -26,6 +26,8 @@ func (b *StateBindingClear) Name() string {
 	return "clear"
 }
 
+func (b *StateBindingClear) SetSession(session *discordgo.Session) {}
+
 // Register adds the state-related functions to the Lua state.
 func (b *StateBindingClear) Register(L *lua.LState) *lua.LFunction {
 	return L.NewFunction(func(l *lua.LState) int {

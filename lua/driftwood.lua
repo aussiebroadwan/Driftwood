@@ -175,7 +175,11 @@ function driftwood.register_application_command(command) end
 --- @param handler fun(interaction: EventInteraction) The handler function for the interaction.
 function driftwood.register_interaction(custom_id, handler) end
 
---- Discord Option Types
+
+--- Register an On Ready event handler.
+--- @param custom_id string The custom ID or regex for the interaction.
+--- @param handler fun() The handler function for the interaction.
+function driftwood.on_ready(custom_id, handler) end
 
 --- Enum for Discord application command option types.
 --- @enum

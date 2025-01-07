@@ -21,6 +21,8 @@ func (b *NewOptionBoolBinding) Name() string {
 	return "new_bool"
 }
 
+func (b *NewOptionBoolBinding) SetSession(session *discordgo.Session) {}
+
 // Register adds the `register_application_command` function to a Lua table.
 func (b *NewOptionBoolBinding) Register(L *lua.LState) *lua.LFunction {
 	slog.Info("Registering new button command Lua function")
