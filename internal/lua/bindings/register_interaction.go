@@ -116,6 +116,18 @@ func (b *InteractionEventBinding) executeHandler(L *lua.LState, interaction *dis
 			dataTable.RawSetString(key, lua.LString(value))
 		}
 		interactionTable.RawSetString("data", dataTable)
+	} else {
+		interactionTable.RawSetString("data", lua.LNil)
+	}
+
+	if interaction.MessageComponentData().Values != nil {
+		valuesTable := L.NewTable()
+		for _, value := range interaction.MessageComponentData().Values {
+			valuesTable.Append(lua.LString(value))
+		}
+		interactionTable.RawSetString("values", valuesTable)
+	} else {
+		interactionTable.RawSetString("values", lua.LNil)
 	}
 
 	// Call the Lua function
