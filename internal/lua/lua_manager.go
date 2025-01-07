@@ -63,6 +63,8 @@ func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string
 			bindings.NewApplicationCommandBinding(guildID),
 			bindings.NewInteractionEventBinding(),
 			bindings.NewNewButtonBinding(),
+			bindings.NewNewSelectMenuBinding(),
+			bindings.NewNewSelectMenuOptionBinding(),
 		},
 		"timer": {
 			bindings.NewRunAfterBinding(),

@@ -41,7 +41,8 @@ local driftwood = {
 --- EventInteraction class for handling event interactions (e.g., custom IDs).
 --- Extends the base Interaction class and includes data.
 --- @class EventInteraction : InteractionBase
---- @field data table<string, string> Parsed regex groups from the custom ID.
+--- @field data table<string, string>|nil Parsed regex groups from the custom ID.
+--- @field values string[]|nil The values selected in a select menu.
 
 --- InteractionReplyOptions class for defining reply options.
 --- @class InteractionReplyOptions
@@ -71,6 +72,11 @@ local driftwood = {
 --- @field required? boolean Whether the option is required (default: false).
 --- @field options? CommandOption[] Optional sub-options for subcommands.
 --- @field handler? fun(interaction: CommandInteraction) Optional handler for subcommands.
+
+--- SelectOption class for defining options within select menus.
+--- @class SelectOption
+--- @field label string The label of the option.
+--- @field value string The value of the option.
 
 --- State Management
 
@@ -118,6 +124,20 @@ function driftwood.log.error(message) end
 --- @param disabled? boolean Optional flag to disable the button.
 --- @return InteractionComponents button The new button component.
 function driftwood.new_button(label, custom_id, disabled) end
+
+--- Create a new instance of a select menu option.
+--- @param label string The label of the option.
+--- @param value string The custom ID for the option.
+--- @return SelectOption opt The new select menu option.
+function driftwood.new_selectmenu_opt(label, value) end
+
+--- Create a new instance of a select menu in an action row.
+--- @param placeholder string The placeholder text for the select menu.
+--- @param custom_id string The custom ID for the select menu.
+--- @param options SelectOption[] The options for the select menu.
+--- @param disabled boolean Whether the select menu is disabled.
+--- @return InteractionComponents selectmenu The new select menu component.
+function driftwood.new_selectmenu(placeholder, custom_id, options, disabled) end
 
 --- Options Functions
 

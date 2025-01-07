@@ -35,6 +35,45 @@ func ParseComponents(_ *lua.LState, table *lua.LTable) ([]discordgo.MessageCompo
 				Style:    discordgo.PrimaryButton, // Default style
 				Disabled: disabled,
 			})
+		case "select":
+			placeholder := componentTable.RawGetString("placeholder").String()
+			customID := componentTable.RawGetString("custom_id").String()
+
+			disabled := false
+			disabledRaw := componentTable.RawGetString("disabled")
+			if disabledRaw.Type() == lua.LTBool {
+				disabled = lua.LVAsBool(disabledRaw)
+			}
+
+			optionsRaw := componentTable.RawGetString("options")
+			options, ok := optionsRaw.(*lua.LTable)
+			if !ok {
+				return // Skip invalid entries
+			}
+
+			var selectOptions []discordgo.SelectMenuOption
+			options.ForEach(func(_, value lua.LValue) {
+				optionTable, ok := value.(*lua.LTable)
+				if !ok {
+					return // Skip invalid entries
+				}
+
+				optLabel := optionTable.RawGetString("label").String()
+				optValue := optionTable.RawGetString("value").String() // custom id
+
+				selectOptions = append(selectOptions, discordgo.SelectMenuOption{
+					Label: optLabel,
+					Value: optValue,
+				})
+			})
+
+			components = append(components, discordgo.SelectMenu{
+				Placeholder: placeholder,
+				CustomID:    customID,
+				Options:     selectOptions,
+				Disabled:    disabled,
+			})
+
 		default:
 			return
 		}

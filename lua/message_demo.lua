@@ -65,6 +65,12 @@ end
 --- Handles the "md:button:value" interaction.
 --- @param interaction EventInteraction The interaction object from Discord.
 local function handle_button_click(interaction)
+    -- Check if not null
+    if interaction.data == nil then
+        interaction:reply("No data found in the interaction.", { ephemeral = true })
+        return
+    end
+
     local value = interaction.data.value
     if value then
         interaction:reply("Button clicked with value: " .. value, { ephemeral = true })
