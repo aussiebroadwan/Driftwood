@@ -3,7 +3,7 @@
 --- This file provides type annotations and documentation for all Driftwood bindings.
 --- 
 --- Visit the Driftwood GitHub repository for more information and updates:
---- https://github.com/lcox74/driftwood
+--- https://github.com/aussiebroadwan/driftwood
 
 --- Driftwood namespace
 local driftwood = {

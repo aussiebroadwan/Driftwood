@@ -28,7 +28,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build . --tag ghcr.io/lcox74/driftwood:latest
-          docker push ghcr.io/lcox74/driftwood:latest
-          docker tag ghcr.io/lcox74/driftwood:latest ghcr.io/lcox74/driftwood:${{ github.ref_name }}
-          docker push ghcr.io/lcox74/driftwood:${{ github.ref_name }}
+          docker build . --tag ghcr.io/aussiebroadwan/driftwood:latest
+          docker push ghcr.io/aussiebroadwan/driftwood:latest
+          docker tag ghcr.io/aussiebroadwan/driftwood:latest ghcr.io/aussiebroadwan/driftwood:${{ github.ref_name }}
+          docker push ghcr.io/aussiebroadwan/driftwood:${{ github.ref_name }}
