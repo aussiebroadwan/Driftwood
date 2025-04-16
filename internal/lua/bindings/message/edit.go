@@ -2,7 +2,6 @@ package message
 
 import (
 	"driftwood/internal/lua/utils"
-	"fmt"
 	"log/slog"
 
 	"github.com/bwmarrin/discordgo"
@@ -93,11 +92,11 @@ func (b *MessageBindingEdit) Register(L *lua.LState) *lua.LFunction {
 		})
 		if err != nil {
 			slog.Error("Failed to edit message", "message_id", messageID, "channel_id", channelID, "error", err)
-			L.Push(lua.LString(fmt.Sprintf("Failed to edit message: %s", err.Error())))
+			L.Push(lua.LFalse)
 			return 1
 		}
 
-		L.Push(lua.LString("Message edited successfully"))
+		L.Push(lua.LTrue)
 		return 1
 	})
 }

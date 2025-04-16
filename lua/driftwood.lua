@@ -12,6 +12,7 @@ local driftwood = {
     log = {},
     option = {},
     message = {},
+    reaction = {},
     channel = {},
 }
 
@@ -215,6 +216,23 @@ function driftwood.message.edit(message_id, channel_id, content, options) end
 --- @param channel_id string The ID of the channel containing the message.
 --- @return boolean success Whether the deletion was successful.
 function driftwood.message.delete(message_id, channel_id) end
+
+--- Reaction Functions
+--- These functions provide support for adding and removing reactions on messages.
+
+--- Add a reaction to a message.
+--- @param message_id string The ID of the message to react to.
+--- @param channel_id string The ID of the channel where the message is located.
+--- @param reaction_emoji string The emoji to add as a reaction.
+--- @return boolean success Whether the reaction was successfully added.
+function driftwood.reaction.add(message_id, channel_id, reaction_emoji) end
+
+--- Remove a reaction from a message.
+--- @param message_id string The ID of the message from which to remove the reaction.
+--- @param channel_id string The ID of the channel where the message is located.
+--- @param reaction_emoji string The emoji to remove as a reaction.
+--- @return boolean success Whether the reaction was successfully removed.
+function driftwood.reaction.remove(message_id, channel_id, reaction_emoji) end
 
 
 --- Channel Functions
