@@ -31,7 +31,6 @@ local driftwood = {
 --- @field channel_id string The ID of the channel where the interaction occurred.
 --- @field user User The user who triggered the interaction.
 --- @field reply fun(self: InteractionBase, content: string, options?: InteractionReplyOptions) Replies to the interaction.
---- @field reply_with_action fun(self: InteractionBase, content: string, components: InteractionComponents[], options?: InteractionReplyOptions) Replies with action components (e.g., buttons).
 
 --- CommandInteraction class for handling command interactions.
 --- Extends the base Interaction class and includes options.
@@ -48,6 +47,38 @@ local driftwood = {
 --- @class InteractionReplyOptions
 --- @field ephemeral? boolean Whether the reply should be ephemeral (default: false).
 --- @field mention? boolean Whether to mention the user in the reply (default: true).
+--- @field components? InteractionComponents[] Optional components to include in the reply.
+--- @field embed? MessageEmbed Optional embed to include in the reply.
+
+--- MessageOptions class for defining message options.
+--- @class MessageOptions
+--- @field components? InteractionComponents[] Optional components to include in the message.
+--- @field embed? MessageEmbed Optional embed to include in the message.
+
+--- MessageEmbed class for defining embeds in messages.
+--- @class MessageEmbed
+--- @field title? string The title of the embed.
+--- @field description? string The description text.
+--- @field url? string The URL associated with the embed.
+--- @field color? number The color code of the embed.
+--- @field image? table The embed's image.
+--- @field image.url? string The URL of the embed image.
+--- @field thumbnail? table The embed's thumbnail.
+--- @field thumbnail.url? string The URL of the thumbnail image.
+--- @field footer? table The footer information.
+--- @field footer.text? string The footer text.
+--- @field footer.icon_url? string The URL for the footer icon.
+--- @field author? table The author information.
+--- @field author.name? string The name of the author.
+--- @field author.url? string The URL for the author.
+--- @field author.icon_url? string The URL for the author's icon.
+--- @field fields? MessageEmbedField[] Array of fields to include in the embed.
+
+--- MessageEmbedField class representing a field within an embed.
+--- @class MessageEmbedField
+--- @field name string The name of the field.
+--- @field value string The value of the field.
+--- @field inline? boolean Whether the field should be displayed inline (default: false).
 
 --- InteractionComponents class for defining message components (e.g., buttons).
 --- @class InteractionComponents
@@ -167,17 +198,17 @@ function driftwood.option.new_number(label, description, required) end
 --- Add a message to a channel.
 --- @param channel_id string The ID of the channel to send the message to.
 --- @param content string The message content.
---- @param components? InteractionComponents[] Optional components to include with the message.
+--- @param options? MessageOptions Optional options for the message.
 --- @return string|nil message_id The ID of the sent message, or nil if failed.
-function driftwood.message.add(channel_id, content, components) end
+function driftwood.message.add(channel_id, content, options) end
 
 --- Edit an existing message.
 --- @param message_id string The ID of the message to edit.
 --- @param channel_id string The ID of the channel containing the message.
 --- @param content string The new message content.
---- @param components? InteractionComponents[] Optional components to include with the message.
+--- @param options? MessageOptions Optional options for the message.
 --- @return boolean success Whether the edit was successful.
-function driftwood.message.edit(message_id, channel_id, content, components) end
+function driftwood.message.edit(message_id, channel_id, content, options) end
 
 --- Delete a message.
 --- @param message_id string The ID of the message to delete.

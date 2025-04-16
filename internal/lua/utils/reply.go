@@ -16,21 +16,24 @@ func ReplyFunction(session *discordgo.Session, interaction *discordgo.Interactio
 		var message string
 		var options *lua.LTable
 
-		if argCount == 3 {
+		switch argCount {
+		case 3:
 			L.CheckType(1, lua.LTTable) // Check 'self' argument is a table
 			message = L.CheckString(2)
 			L.CheckType(3, lua.LTTable) // Check 'options' argument is a table
 			options = L.OptTable(3, nil)
-		} else if argCount == 2 {
+		case 2:
 			L.CheckType(1, lua.LTTable) // Check 'self' argument is a table
 			message = L.CheckString(2)
-		} else {
+		default:
 			L.ArgError(1, "invalid arguments, expected (message [, options])")
 			return 0
 		}
 
 		ephemeral := false
 		mention := true
+		var embeds []*discordgo.MessageEmbed
+
 		if options != nil {
 			if options.RawGetString("ephemeral") != lua.LNil {
 				if options.RawGetString("ephemeral").Type() != lua.LTBool {
@@ -45,6 +48,23 @@ func ReplyFunction(session *discordgo.Session, interaction *discordgo.Interactio
 					return 0
 				}
 				mention = lua.LVAsBool(options.RawGetString("mention"))
+			}
+
+			// Check for an embed
+			embedRaw := options.RawGetString("embed")
+			if embedRaw != lua.LNil {
+				embedTable, ok := embedRaw.(*lua.LTable)
+				if !ok {
+					L.ArgError(1, "'embed' in options must be a table")
+					return 0
+				}
+				// Parse the embed using our helper.
+				embed, err := ParseEmbed(L, embedTable)
+				if err != nil {
+					L.ArgError(1, fmt.Sprintf("invalid embed: %s", err.Error()))
+					return 0
+				}
+				embeds = append(embeds, embed)
 			}
 		}
 
@@ -62,6 +82,7 @@ func ReplyFunction(session *discordgo.Session, interaction *discordgo.Interactio
 			Data: &discordgo.InteractionResponseData{
 				Content: message,
 				Flags:   flags,
+				Embeds:  embeds,
 			},
 		}); err != nil {
 			slog.Error("Failed to send interaction reply", "error", err)

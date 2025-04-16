@@ -27,17 +27,18 @@ func (b *NewSelectMenuBinding) Register(L *lua.LState) *lua.LFunction {
 		argCount := L.GetTop()
 		selectTable := L.NewTable()
 
-		if argCount == 3 {
-			selectTable.RawSetString("placeholder", lua.LString(L.CheckString(1)))
-			selectTable.RawSetString("custom_id", lua.LString(L.CheckString(2)))
-			selectTable.RawSetString("disabled", lua.LFalse)
-			selectTable.RawSetString("options", L.CheckTable(3))
-		} else if argCount == 4 {
+		switch argCount {
+		case 4:
 			selectTable.RawSetString("placeholder", lua.LString(L.CheckString(1)))
 			selectTable.RawSetString("custom_id", lua.LString(L.CheckString(2)))
 			selectTable.RawSetString("options", L.CheckTable(3))
 			selectTable.RawSetString("disabled", lua.LBool(L.CheckBool(4)))
-		} else {
+		case 3:
+			selectTable.RawSetString("placeholder", lua.LString(L.CheckString(1)))
+			selectTable.RawSetString("custom_id", lua.LString(L.CheckString(2)))
+			selectTable.RawSetString("disabled", lua.LFalse)
+			selectTable.RawSetString("options", L.CheckTable(3))
+		default:
 			L.ArgError(1, "invalid arguments, expected (name, custom_id [, disabled])")
 		}
 
