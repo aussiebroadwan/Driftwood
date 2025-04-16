@@ -13,6 +13,10 @@ import (
 	lua "github.com/yuin/gopher-lua"
 
 	"driftwood/internal/lua/bindings"
+	bindings_message "driftwood/internal/lua/bindings/message"
+	bindings_options "driftwood/internal/lua/bindings/options"
+	bindings_state "driftwood/internal/lua/bindings/state"
+
 	"driftwood/internal/lua/utils"
 )
 
@@ -70,19 +74,19 @@ func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string
 			bindings.NewRunAfterBinding(),
 		},
 		"state": {
-			bindings.NewStateBindingGet(m.StateManager),
-			bindings.NewStateBindingSet(m.StateManager),
-			bindings.NewStateBindingClear(m.StateManager),
+			bindings_state.NewStateBindingGet(m.StateManager),
+			bindings_state.NewStateBindingSet(m.StateManager),
+			bindings_state.NewStateBindingClear(m.StateManager),
 		},
 		"message": {
-			bindings.NewMessageBindingAdd(),
-			bindings.NewMessageBindingEdit(),
-			bindings.NewMessageBindingDelete(),
+			bindings_message.NewMessageBindingAdd(),
+			bindings_message.NewMessageBindingEdit(),
+			bindings_message.NewMessageBindingDelete(),
 		},
 		"option": {
-			bindings.NewNewOptionStringBinding(),
-			bindings.NewNewOptionNumberBinding(),
-			bindings.NewNewOptionBoolBinding(),
+			bindings_options.NewNewOptionStringBinding(),
+			bindings_options.NewNewOptionNumberBinding(),
+			bindings_options.NewNewOptionBoolBinding(),
 		},
 		"channel": {
 			bindings.NewChannelBindingGet(guildID),

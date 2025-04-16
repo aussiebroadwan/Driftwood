@@ -1,4 +1,4 @@
-package bindings
+package message
 
 import (
 	"driftwood/internal/lua/utils"
