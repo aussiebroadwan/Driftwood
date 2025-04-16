@@ -8,8 +8,12 @@ local button_id = "example_race_join"
 --- @param interaction CommandInteraction The interaction object from Discord.
 local function handle_race_command(interaction)
     -- Respond with a message and a "Join" button.
-    interaction:reply_with_action("Join the race!", {
-        driftwood.new_button("Join", button_id), 
+    interaction:reply("Join the race!", {
+        components = {
+            driftwood.new_action_row({
+                driftwood.new_button("Join", button_id),
+            }),
+        }
     })
 end
 

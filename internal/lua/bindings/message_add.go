@@ -34,8 +34,35 @@ func (b *MessageBindingAdd) Register(L *lua.LState) *lua.LFunction {
 	return L.NewFunction(func(L *lua.LState) int {
 		channelID := L.CheckString(1)
 		content := L.CheckString(2)
-		components := L.OptTable(3, nil) // Optional components table
+		opts := L.OptTable(3, nil)
 
+		// Options table may have "components" and "embed" keys
+		var components *lua.LTable = nil
+		var embedTable *lua.LTable = nil
+
+		if opts != nil {
+			comp := opts.RawGetString("components")
+			if comp != lua.LNil {
+				if compTable, ok := comp.(*lua.LTable); ok {
+					components = compTable
+				} else {
+					L.ArgError(3, "options.components must be a table")
+					return 0
+				}
+			}
+
+			em := opts.RawGetString("embed")
+			if em != lua.LNil {
+				if embedT, ok := em.(*lua.LTable); ok {
+					embedTable = embedT
+				} else {
+					L.ArgError(3, "options.embed must be a table")
+					return 0
+				}
+			}
+		}
+
+		// Parse the embed table if provided
 		var parsedComponents []discordgo.MessageComponent
 		if components != nil {
 			var err error
@@ -46,11 +73,23 @@ func (b *MessageBindingAdd) Register(L *lua.LState) *lua.LFunction {
 			}
 		}
 
-		slog.Info("Sending message", "channel_id", channelID, "content", content, "components", parsedComponents)
+		// Parse embed if provided.
+		var embed *discordgo.MessageEmbed
+		if embedTable != nil {
+			var err error
+			embed, err = utils.ParseEmbed(L, embedTable)
+			if err != nil {
+				L.ArgError(4, err.Error())
+				return 0
+			}
+		}
+
+		slog.Info("Sending complex message", "channel_id", channelID, "content", content, "components", parsedComponents, "embed", embed)
 
 		message, err := b.Session.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 			Content:    content,
 			Components: parsedComponents,
+			Embed:      embed,
 		})
 		if err != nil {
 			slog.Error("Failed to send message", "channel_id", channelID, "error", err)

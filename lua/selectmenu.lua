@@ -20,10 +20,12 @@ end
 --- @param interaction CommandInteraction The interaction object from Discord.
 local function handle_selectmenu(interaction)
     local message_id = driftwood.message.add(interaction.channel_id, "Testing the select menu", {
-        driftwood.new_selectmenu("Select an option", "md:selectmenu:initial", {
-            driftwood.new_selectmenu_opt("Option 1", "option1"),
-            driftwood.new_selectmenu_opt("Option 2", "option2"),
-        }, false),
+        components = {
+            driftwood.new_selectmenu("Select an option", "md:selectmenu:initial", {
+                driftwood.new_selectmenu_opt("Option 1", "option1"),
+                driftwood.new_selectmenu_opt("Option 2", "option2"),
+            }, false),
+        }
     })
 
     if not message_id then

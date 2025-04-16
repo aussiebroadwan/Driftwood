@@ -31,6 +31,8 @@ func ReplyFunction(session *discordgo.Session, interaction *discordgo.Interactio
 
 		ephemeral := false
 		mention := true
+		var embeds []*discordgo.MessageEmbed
+
 		if options != nil {
 			if options.RawGetString("ephemeral") != lua.LNil {
 				if options.RawGetString("ephemeral").Type() != lua.LTBool {
@@ -45,6 +47,23 @@ func ReplyFunction(session *discordgo.Session, interaction *discordgo.Interactio
 					return 0
 				}
 				mention = lua.LVAsBool(options.RawGetString("mention"))
+			}
+
+			// Check for an embed
+			embedRaw := options.RawGetString("embed")
+			if embedRaw != lua.LNil {
+				embedTable, ok := embedRaw.(*lua.LTable)
+				if !ok {
+					L.ArgError(1, "'embed' in options must be a table")
+					return 0
+				}
+				// Parse the embed using our helper.
+				embed, err := ParseEmbed(L, embedTable)
+				if err != nil {
+					L.ArgError(1, fmt.Sprintf("invalid embed: %s", err.Error()))
+					return 0
+				}
+				embeds = append(embeds, embed)
 			}
 		}
 
@@ -62,6 +81,7 @@ func ReplyFunction(session *discordgo.Session, interaction *discordgo.Interactio
 			Data: &discordgo.InteractionResponseData{
 				Content: message,
 				Flags:   flags,
+				Embeds:  embeds,
 			},
 		}); err != nil {
 			slog.Error("Failed to send interaction reply", "error", err)

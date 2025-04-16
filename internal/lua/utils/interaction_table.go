@@ -11,7 +11,6 @@ func PrepareInteractionTable(L *lua.LState, session *discordgo.Session, interact
 
 	// Add the `reply` method to the interaction table
 	interactionTable.RawSetString("reply", L.NewFunction(ReplyFunction(session, interaction)))
-	interactionTable.RawSetString("reply_with_action", L.NewFunction(ReplyWithActionFunction(session, interaction)))
 
 	interactionTable.RawSetString("interaction_id", lua.LString(interaction.ID))
 	interactionTable.RawSetString("channel_id", lua.LString(interaction.ChannelID))
