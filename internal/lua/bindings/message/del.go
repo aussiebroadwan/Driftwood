@@ -1,7 +1,6 @@
 package message
 
 import (
-	"fmt"
 	"log/slog"
 
 	"github.com/bwmarrin/discordgo"
@@ -37,11 +36,11 @@ func (b *MessageBindingDelete) Register(L *lua.LState) *lua.LFunction {
 		err := b.Session.ChannelMessageDelete(channelID, messageID)
 		if err != nil {
 			slog.Error("Failed to delete message", "message_id", messageID, "channel_id", channelID, "error", err)
-			L.Push(lua.LString(fmt.Sprintf("Failed to delete message: %s", err.Error())))
+			L.Push(lua.LFalse)
 			return 1
 		}
 
-		L.Push(lua.LString("Message deleted successfully"))
+		L.Push(lua.LTrue)
 		return 1
 	})
 }

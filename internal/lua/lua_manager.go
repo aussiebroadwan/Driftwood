@@ -15,6 +15,7 @@ import (
 	"driftwood/internal/lua/bindings"
 	bindings_message "driftwood/internal/lua/bindings/message"
 	bindings_options "driftwood/internal/lua/bindings/options"
+	bindings_reaction "driftwood/internal/lua/bindings/reaction"
 	bindings_state "driftwood/internal/lua/bindings/state"
 
 	"driftwood/internal/lua/utils"
@@ -82,6 +83,10 @@ func (m *LuaManager) RegisterBindings(session *discordgo.Session, guildID string
 			bindings_message.NewMessageBindingAdd(),
 			bindings_message.NewMessageBindingEdit(),
 			bindings_message.NewMessageBindingDelete(),
+		},
+		"reaction": {
+			bindings_reaction.NewReactionBindingAdd(),
+			bindings_reaction.NewReactionBindingRemove(),
 		},
 		"option": {
 			bindings_options.NewNewOptionStringBinding(),
