@@ -10,16 +10,16 @@ func NewOptionRegister(optionType discordgo.ApplicationCommandOptionType) lua.LG
 		argCount := L.GetTop()
 		buttonTable := L.NewTable()
 
-		if argCount == 2 {
-			buttonTable.RawSetString("name", lua.LString(L.CheckString(1)))
-			buttonTable.RawSetString("description", lua.LString(L.CheckString(2)))
-			buttonTable.RawSetString("required", lua.LFalse)
-
-		} else if argCount == 3 {
+		switch argCount {
+		case 3:
 			buttonTable.RawSetString("name", lua.LString(L.CheckString(1)))
 			buttonTable.RawSetString("description", lua.LString(L.CheckString(2)))
 			buttonTable.RawSetString("required", lua.LBool(L.CheckBool(3)))
-		} else {
+		case 2:
+			buttonTable.RawSetString("name", lua.LString(L.CheckString(1)))
+			buttonTable.RawSetString("description", lua.LString(L.CheckString(2)))
+			buttonTable.RawSetString("required", lua.LFalse)
+		default:
 			L.ArgError(1, "invalid arguments, expected (name, custom_id [, style])")
 		}
 

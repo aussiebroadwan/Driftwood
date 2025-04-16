@@ -16,15 +16,16 @@ func ReplyFunction(session *discordgo.Session, interaction *discordgo.Interactio
 		var message string
 		var options *lua.LTable
 
-		if argCount == 3 {
+		switch argCount {
+		case 3:
 			L.CheckType(1, lua.LTTable) // Check 'self' argument is a table
 			message = L.CheckString(2)
 			L.CheckType(3, lua.LTTable) // Check 'options' argument is a table
 			options = L.OptTable(3, nil)
-		} else if argCount == 2 {
+		case 2:
 			L.CheckType(1, lua.LTTable) // Check 'self' argument is a table
 			message = L.CheckString(2)
-		} else {
+		default:
 			L.ArgError(1, "invalid arguments, expected (message [, options])")
 			return 0
 		}
