@@ -31,8 +31,8 @@ func (b *ChannelBindingGet) SetSession(session *discordgo.Session) {
 }
 
 // Register registers the channel-related functions in the Lua state.
-func (b *ChannelBindingGet) Register(L *lua.LState) *lua.LFunction {
-	return L.NewFunction(func(L *lua.LState) int {
+func (b *ChannelBindingGet) Register() lua.LGFunction {
+	return func(L *lua.LState) int {
 		channelName := L.CheckString(1)
 
 		channels, err := b.Session.GuildChannels(b.GuildID)
@@ -52,10 +52,10 @@ func (b *ChannelBindingGet) Register(L *lua.LState) *lua.LFunction {
 
 		L.Push(lua.LNil)
 		return 1
-	})
+	}
 }
 
-func (b *ChannelBindingGet) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *ChannelBindingGet) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	return nil
 }
 

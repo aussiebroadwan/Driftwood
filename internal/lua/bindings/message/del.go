@@ -28,8 +28,8 @@ func (b *MessageBindingDelete) SetSession(session *discordgo.Session) {
 }
 
 // Register registers the message-related functions in the Lua state.
-func (b *MessageBindingDelete) Register(L *lua.LState) *lua.LFunction {
-	return L.NewFunction(func(L *lua.LState) int {
+func (b *MessageBindingDelete) Register() lua.LGFunction {
+	return func(L *lua.LState) int {
 		messageID := L.CheckString(1)
 		channelID := L.CheckString(2)
 
@@ -42,11 +42,11 @@ func (b *MessageBindingDelete) Register(L *lua.LState) *lua.LFunction {
 
 		L.Push(lua.LTrue)
 		return 1
-	})
+	}
 }
 
 // HandleInteraction is not applicable for this binding.
-func (b *MessageBindingDelete) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *MessageBindingDelete) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	// This binding does not handle interactions
 	return nil
 }

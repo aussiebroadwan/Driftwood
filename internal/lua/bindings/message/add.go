@@ -30,8 +30,8 @@ func (b *MessageBindingAdd) SetSession(session *discordgo.Session) {
 }
 
 // Register registers the message-related functions in the Lua state.
-func (b *MessageBindingAdd) Register(L *lua.LState) *lua.LFunction {
-	return L.NewFunction(func(L *lua.LState) int {
+func (b *MessageBindingAdd) Register() lua.LGFunction {
+	return func(L *lua.LState) int {
 		channelID := L.CheckString(1)
 		content := L.CheckString(2)
 		opts := L.OptTable(3, nil)
@@ -100,11 +100,11 @@ func (b *MessageBindingAdd) Register(L *lua.LState) *lua.LFunction {
 
 		L.Push(lua.LString(message.ID)) // Return the message ID
 		return 1
-	})
+	}
 }
 
 // HandleInteraction is not applicable for this binding.
-func (b *MessageBindingAdd) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *MessageBindingAdd) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	// This binding does not handle interactions
 	return nil
 }

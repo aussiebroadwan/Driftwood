@@ -1,6 +1,7 @@
 package bindings
 
 import (
+	"driftwood/internal/lua/utils"
 	"fmt"
 	"log/slog"
 	"time"
@@ -26,8 +27,8 @@ func (b *RunAfterBinding) Name() string {
 func (b *RunAfterBinding) SetSession(session *discordgo.Session) {}
 
 // Register creates the `run_after` Lua function and adds it to the Lua state.
-func (b *RunAfterBinding) Register(L *lua.LState) *lua.LFunction {
-	return L.NewFunction(func(L *lua.LState) int {
+func (b *RunAfterBinding) Register() lua.LGFunction {
+	return func(L *lua.LState) int {
 		// Validate arguments
 		fn := L.CheckFunction(1)         // First argument: Lua function
 		delaySeconds := L.CheckNumber(2) // Second argument: Delay in seconds
@@ -44,25 +45,28 @@ func (b *RunAfterBinding) Register(L *lua.LState) *lua.LFunction {
 		go func(globalName string) {
 			time.Sleep(time.Duration(float64(delaySeconds) * float64(time.Second)))
 
-			// Lock the Lua state for execution
-			if err := L.CallByParam(lua.P{
-				Fn:      L.GetGlobal(globalName), // Retrieve the function by global name
-				NRet:    0,                       // No return values
-				Protect: true,                    // Catch errors
-			}); err != nil {
-				slog.Error("Failed to execute delayed Lua function", "error", err)
-			}
+			utils.GetLuaRunner().Do(func(L *lua.LState) {
 
-			// Remove the global function to clean up
-			L.SetGlobal(globalName, lua.LNil)
+				// Lock the Lua state for execution
+				if err := L.CallByParam(lua.P{
+					Fn:      L.GetGlobal(globalName), // Retrieve the function by global name
+					NRet:    0,                       // No return values
+					Protect: true,                    // Catch errors
+				}); err != nil {
+					slog.Error("Failed to execute delayed Lua function", "error", err)
+				}
+
+				// Remove the global function to clean up
+				L.SetGlobal(globalName, lua.LNil)
+			})
 		}(globalName)
 
 		return 0
-	})
+	}
 }
 
 // HandleInteraction is not applicable for this binding.
-func (b *RunAfterBinding) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *RunAfterBinding) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	// This binding does not handle interactions
 	return nil
 }

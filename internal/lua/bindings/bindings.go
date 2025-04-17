@@ -7,8 +7,8 @@ import (
 
 type LuaBinding interface {
 	Name() string
-	Register(L *lua.LState) *lua.LFunction
+	Register() lua.LGFunction
 	SetSession(session *discordgo.Session)
-	HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error
+	HandleInteraction(interaction *discordgo.InteractionCreate) error
 	CanHandleInteraction(interaction *discordgo.InteractionCreate) bool
 }

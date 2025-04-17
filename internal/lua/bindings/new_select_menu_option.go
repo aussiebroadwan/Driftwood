@@ -21,19 +21,19 @@ func (b *NewSelectMenuOptionBinding) Name() string {
 
 func (b *NewSelectMenuOptionBinding) SetSession(session *discordgo.Session) {}
 
-func (b *NewSelectMenuOptionBinding) Register(L *lua.LState) *lua.LFunction {
+func (b *NewSelectMenuOptionBinding) Register() lua.LGFunction {
 	slog.Info("Registering new select menu command Lua function")
-	return L.NewFunction(func(L *lua.LState) int {
+	return func(L *lua.LState) int {
 		optTable := L.NewTable()
 		optTable.RawSetString("label", lua.LString(L.CheckString(1)))
 		optTable.RawSetString("value", lua.LString(L.CheckString(2)))
 		L.Push(optTable)
 		return 1
-	})
+	}
 }
 
 // HandleInteraction is not applicable for this binding.
-func (b *NewSelectMenuOptionBinding) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *NewSelectMenuOptionBinding) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	// This binding does not handle interactions
 	return nil
 }

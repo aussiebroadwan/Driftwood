@@ -36,8 +36,8 @@ func (b *InteractionEventBinding) SetSession(session *discordgo.Session) {
 }
 
 // Register adds the `register_interaction` function to Lua.
-func (b *InteractionEventBinding) Register(L *lua.LState) *lua.LFunction {
-	return L.NewFunction(func(L *lua.LState) int {
+func (b *InteractionEventBinding) Register() lua.LGFunction {
+	return func(L *lua.LState) int {
 		customID := L.CheckString(1)  // First argument is the custom_id or regex pattern
 		handler := L.CheckFunction(2) // Second argument is the handler function
 
@@ -62,7 +62,7 @@ func (b *InteractionEventBinding) Register(L *lua.LState) *lua.LFunction {
 		}
 
 		return 0
-	})
+	}
 }
 
 func (b *InteractionEventBinding) CanHandleInteraction(interaction *discordgo.InteractionCreate) bool {
@@ -71,12 +71,12 @@ func (b *InteractionEventBinding) CanHandleInteraction(interaction *discordgo.In
 }
 
 // HandleInteraction executes the Lua handler for a registered interaction event.
-func (b *InteractionEventBinding) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *InteractionEventBinding) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	customID := interaction.MessageComponentData().CustomID
 
 	// Check for exact matches first
 	if handlerName, exists := b.Interactions[customID]; exists {
-		return b.executeHandler(L, interaction, handlerName, customID, nil)
+		return b.executeHandler(interaction, handlerName, customID, nil)
 	}
 
 	// Check regex-based handlers
@@ -90,7 +90,7 @@ func (b *InteractionEventBinding) HandleInteraction(L *lua.LState, interaction *
 					groupMap[name] = matches[i]
 				}
 			}
-			return b.executeHandler(L, interaction, handlerName, customID, groupMap)
+			return b.executeHandler(interaction, handlerName, customID, groupMap)
 		}
 	}
 
@@ -99,49 +99,52 @@ func (b *InteractionEventBinding) HandleInteraction(L *lua.LState, interaction *
 }
 
 // executeHandler executes the Lua handler for a given custom ID and attaches data from regex matches if available.
-func (b *InteractionEventBinding) executeHandler(L *lua.LState, interaction *discordgo.InteractionCreate, handlerName, matchedID string, groupMap map[string]string) error {
-	fn := L.GetGlobal(handlerName)
-	if fn == lua.LNil {
-		slog.Error("Lua handler not implemented", "custom_id", matchedID)
-		return fmt.Errorf("handler for custom ID '%s' not implemented", matchedID)
-	}
+func (b *InteractionEventBinding) executeHandler(interaction *discordgo.InteractionCreate, handlerName, matchedID string, groupMap map[string]string) error {
 
-	// Prepare the interaction table
-	interactionTable := b.prepareInteractionTable(L, interaction)
-
-	// Add the extracted data from regex as a subtable if available
-	if groupMap != nil {
-		dataTable := L.NewTable()
-		for key, value := range groupMap {
-			dataTable.RawSetString(key, lua.LString(value))
+	utils.GetLuaRunner().Do(func(L *lua.LState) {
+		fn := L.GetGlobal(handlerName)
+		if fn == lua.LNil {
+			slog.Error("Lua handler not implemented", "custom_id", matchedID)
+			return
 		}
-		interactionTable.RawSetString("data", dataTable)
-	} else {
-		interactionTable.RawSetString("data", lua.LNil)
-	}
 
-	if interaction.MessageComponentData().Values != nil {
-		valuesTable := L.NewTable()
-		for _, value := range interaction.MessageComponentData().Values {
-			valuesTable.Append(lua.LString(value))
+		// Prepare the interaction table
+		interactionTable := b.prepareInteractionTable(L, interaction)
+
+		// Add the extracted data from regex as a subtable if available
+		if groupMap != nil {
+			dataTable := L.NewTable()
+			for key, value := range groupMap {
+				dataTable.RawSetString(key, lua.LString(value))
+			}
+			interactionTable.RawSetString("data", dataTable)
+		} else {
+			interactionTable.RawSetString("data", lua.LNil)
 		}
-		interactionTable.RawSetString("values", valuesTable)
-	} else {
-		interactionTable.RawSetString("values", lua.LNil)
-	}
 
-	// Call the Lua function
-	err := L.CallByParam(lua.P{
-		Fn:      fn,
-		NRet:    0,
-		Protect: true,
-	}, interactionTable)
-	if err != nil {
-		slog.Error("Error executing Lua interaction handler", "error", err, "custom_id", matchedID)
-		return err
-	}
+		if interaction.MessageComponentData().Values != nil {
+			valuesTable := L.NewTable()
+			for _, value := range interaction.MessageComponentData().Values {
+				valuesTable.Append(lua.LString(value))
+			}
+			interactionTable.RawSetString("values", valuesTable)
+		} else {
+			interactionTable.RawSetString("values", lua.LNil)
+		}
 
-	slog.Info("Interaction handled successfully", "custom_id", matchedID)
+		// Call the Lua function
+		err := L.CallByParam(lua.P{
+			Fn:      fn,
+			NRet:    0,
+			Protect: true,
+		}, interactionTable)
+		if err != nil {
+			slog.Error("Error executing Lua interaction handler", "error", err, "custom_id", matchedID)
+			return
+		}
+
+		slog.Info("Interaction handled successfully", "custom_id", matchedID)
+	})
 	return nil
 }
 

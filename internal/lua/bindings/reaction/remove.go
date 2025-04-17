@@ -28,8 +28,8 @@ func (b *ReactionBindingRemove) SetSession(session *discordgo.Session) {
 }
 
 // Register registers the reaction-related functions in the Lua state.
-func (b *ReactionBindingRemove) Register(L *lua.LState) *lua.LFunction {
-	return L.NewFunction(func(L *lua.LState) int {
+func (b *ReactionBindingRemove) Register() lua.LGFunction {
+	return func(L *lua.LState) int {
 		messageID := L.CheckString(1)
 		channelID := L.CheckString(2)
 		content := L.CheckString(3)
@@ -43,11 +43,11 @@ func (b *ReactionBindingRemove) Register(L *lua.LState) *lua.LFunction {
 
 		L.Push(lua.LTrue)
 		return 1
-	})
+	}
 }
 
 // HandleInteraction is not applicable for this binding.
-func (b *ReactionBindingRemove) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *ReactionBindingRemove) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	// This binding does not handle interactions
 	return nil
 }

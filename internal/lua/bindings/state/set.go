@@ -29,8 +29,8 @@ func (b *StateBindingSet) Name() string {
 func (b *StateBindingSet) SetSession(session *discordgo.Session) {}
 
 // Register adds the state-related functions to the Lua state.
-func (b *StateBindingSet) Register(L *lua.LState) *lua.LFunction {
-	return L.NewFunction(func(L *lua.LState) int {
+func (b *StateBindingSet) Register() lua.LGFunction {
+	return func(L *lua.LState) int {
 
 		key := L.CheckString(1)
 		value := L.CheckAny(2)
@@ -38,11 +38,11 @@ func (b *StateBindingSet) Register(L *lua.LState) *lua.LFunction {
 
 		b.StateManager.Set(key, value, expiry)
 		return 0
-	})
+	}
 }
 
 // HandleInteraction is not applicable for this binding.
-func (b *StateBindingSet) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *StateBindingSet) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	// This binding does not handle interactions
 	return nil
 }

@@ -43,9 +43,9 @@ func (b *ApplicationCommandBinding) SetSession(session *discordgo.Session) {
 }
 
 // Register adds the `register_application_command` function to a Lua table.
-func (b *ApplicationCommandBinding) Register(L *lua.LState) *lua.LFunction {
+func (b *ApplicationCommandBinding) Register() lua.LGFunction {
 	slog.Info("Registering application command Lua function")
-	return L.NewFunction(func(L *lua.LState) int {
+	return func(L *lua.LState) int {
 		command := L.CheckTable(1)
 
 		// Validate required fields
@@ -101,7 +101,7 @@ func (b *ApplicationCommandBinding) Register(L *lua.LState) *lua.LFunction {
 
 		slog.Info("Registered command successfully", "name", name, "description", description)
 		return 0
-	})
+	}
 }
 
 // parseOptions parses Lua options tables recursively to support subcommands.
@@ -162,7 +162,7 @@ func (b *ApplicationCommandBinding) CanHandleInteraction(interaction *discordgo.
 }
 
 // HandleInteraction executes the Lua handler for a command or subcommand.
-func (b *ApplicationCommandBinding) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *ApplicationCommandBinding) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	slog.Info("Handling command interaction", "interaction_id", interaction.ID)
 	data := interaction.ApplicationCommandData()
 	commandName := data.Name
@@ -180,26 +180,28 @@ func (b *ApplicationCommandBinding) HandleInteraction(L *lua.LState, interaction
 		return fmt.Errorf("command '%s' not registered", commandName)
 	}
 
-	slog.Debug("Executing Lua handler", "handler_name", globalName)
-	fn := L.GetGlobal(globalName)
-	if fn == lua.LNil {
-		slog.Error("Lua handler not implemented", "command", commandName)
-		return fmt.Errorf("command handler '%s' not implemented", commandName)
-	}
+	utils.GetLuaRunner().Do(func(L *lua.LState) {
+		slog.Debug("Executing Lua handler", "handler_name", globalName)
+		fn := L.GetGlobal(globalName)
+		if fn == lua.LNil {
+			slog.Error("Lua handler not implemented", "command", commandName)
+			return
+		}
 
-	interactionTable := b.prepareInteractionTable(L, interaction)
+		interactionTable := b.prepareInteractionTable(L, interaction)
 
-	err := L.CallByParam(lua.P{
-		Fn:      fn,
-		NRet:    0,
-		Protect: true,
-	}, interactionTable)
-	if err != nil {
-		slog.Error("Error executing Lua command handler", "error", err, "command", commandName)
-		return err
-	}
+		err := L.CallByParam(lua.P{
+			Fn:      fn,
+			NRet:    0,
+			Protect: true,
+		}, interactionTable)
+		if err != nil {
+			slog.Error("Error executing Lua command handler", "error", err, "command", commandName)
+			return
+		}
+		slog.Info("Command handled successfully", "command", commandName)
+	})
 
-	slog.Info("Command handled successfully", "command", commandName)
 	return nil
 }
 

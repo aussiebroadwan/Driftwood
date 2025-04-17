@@ -24,13 +24,13 @@ func (b *NewOptionNumberBinding) Name() string {
 func (b *NewOptionNumberBinding) SetSession(session *discordgo.Session) {}
 
 // Register adds the `register_application_command` function to a Lua table.
-func (b *NewOptionNumberBinding) Register(L *lua.LState) *lua.LFunction {
+func (b *NewOptionNumberBinding) Register() lua.LGFunction {
 	slog.Info("Registering new button command Lua function")
-	return L.NewFunction(utils.NewOptionRegister(discordgo.ApplicationCommandOptionNumber))
+	return utils.NewOptionRegister(discordgo.ApplicationCommandOptionNumber)
 }
 
 // HandleInteraction is not applicable for this binding.
-func (b *NewOptionNumberBinding) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *NewOptionNumberBinding) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	// This binding does not handle interactions
 	return nil
 }

@@ -21,9 +21,9 @@ func (b *NewButtonBinding) Name() string {
 
 func (b *NewButtonBinding) SetSession(session *discordgo.Session) {}
 
-func (b *NewButtonBinding) Register(L *lua.LState) *lua.LFunction {
+func (b *NewButtonBinding) Register() lua.LGFunction {
 	slog.Info("Registering new button command Lua function")
-	return L.NewFunction(func(L *lua.LState) int {
+	return func(L *lua.LState) int {
 		argCount := L.GetTop()
 		buttonTable := L.NewTable()
 
@@ -45,11 +45,11 @@ func (b *NewButtonBinding) Register(L *lua.LState) *lua.LFunction {
 
 		L.Push(buttonTable)
 		return 1
-	})
+	}
 }
 
 // HandleInteraction is not applicable for this binding.
-func (b *NewButtonBinding) HandleInteraction(L *lua.LState, interaction *discordgo.InteractionCreate) error {
+func (b *NewButtonBinding) HandleInteraction(interaction *discordgo.InteractionCreate) error {
 	// This binding does not handle interactions
 	return nil
 }

@@ -38,7 +38,6 @@ var DiscordOptionTypes = map[string]int{
 
 // LuaManager handles loading and executing Lua scripts and binding them to Discord commands/events.
 type LuaManager struct {
-	LuaState     *lua.LState // The Lua VM state
 	Bindings     map[string][]bindings.LuaBinding
 	OnReadyCbs   []string
 	StateManager *utils.StateManager
@@ -48,7 +47,6 @@ type LuaManager struct {
 func NewManager(session *discordgo.Session, guildID string) *LuaManager {
 	sm := utils.NewStateManager()
 	manager := &LuaManager{
-		LuaState:     lua.NewState(),
 		StateManager: sm,
 		Bindings:     make(map[string][]bindings.LuaBinding),
 		OnReadyCbs:   make([]string, 0),
@@ -116,9 +114,11 @@ func (m *LuaManager) LoadScripts(path string) error {
 	}
 
 	// Update `package.path` to include the new path.
-	packagePath := m.LuaState.GetField(m.LuaState.GetGlobal("package"), "path").String()
-	newPath := filepath.Join(absPath, "?.lua")
-	m.LuaState.SetField(m.LuaState.GetGlobal("package"), "path", lua.LString(packagePath+";"+newPath))
+	utils.GetLuaRunner().Do(func(L *lua.LState) {
+		packagePath := L.GetField(L.GetGlobal("package"), "path").String()
+		newPath := filepath.Join(absPath, "?.lua")
+		L.SetField(L.GetGlobal("package"), "path", lua.LString(packagePath+";"+newPath))
+	})
 
 	// Walk through the directory and load each Lua script
 	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
@@ -131,10 +131,11 @@ func (m *LuaManager) LoadScripts(path string) error {
 			initFilePath := filepath.Join(path, "init.lua")
 			if _, err := os.Stat(initFilePath); err == nil {
 				slog.Debug("Loading Lua module", "path", initFilePath)
-				if loadErr := m.LuaState.DoFile(initFilePath); loadErr != nil {
-					slog.Error("Failed to load Lua module", "path", initFilePath, "error", loadErr)
-					return loadErr
-				}
+				utils.GetLuaRunner().Do(func(L *lua.LState) {
+					if loadErr := L.DoFile(initFilePath); loadErr != nil {
+						slog.Error("Failed to load Lua module", "path", initFilePath, "error", loadErr)
+					}
+				})
 			}
 			return nil
 		}
@@ -142,10 +143,11 @@ func (m *LuaManager) LoadScripts(path string) error {
 		// Load single-file commands.
 		if filepath.Ext(path) == ".lua" && info.Name() != "init.lua" {
 			slog.Debug("Loading Lua script", "path", path)
-			if loadErr := m.LuaState.DoFile(path); loadErr != nil {
-				slog.Error("Failed to load Lua script", "path", path, "error", loadErr)
-				return loadErr
-			}
+			utils.GetLuaRunner().Do(func(L *lua.LState) {
+				if loadErr := L.DoFile(path); loadErr != nil {
+					slog.Error("Failed to load Lua script", "path", path, "error", loadErr)
+				}
+			})
 		}
 
 		return nil
@@ -179,7 +181,7 @@ func (m *LuaManager) RegisterDiscordModule() {
 
 			if groupName == "default" {
 				for _, binding := range group {
-					fn := binding.Register(m.LuaState)
+					fn := L.NewFunction(binding.Register())
 					L.SetField(module, binding.Name(), fn)
 					slog.Info("Registered binding", "name", binding.Name())
 				}
@@ -190,9 +192,9 @@ func (m *LuaManager) RegisterDiscordModule() {
 			// Create a sub-table for the group.
 			subTable := L.NewTable()
 			for _, binding := range group {
-				fn := binding.Register(m.LuaState)
+				fn := L.NewFunction(binding.Register())
 				L.SetField(subTable, binding.Name(), fn)
-				slog.Info("Registered binding", "name", binding.Name())
+				slog.Info("Registered binding", "name", fmt.Sprintf("%s.%s", groupName, binding.Name()))
 			}
 
 			L.SetField(module, groupName, subTable)
@@ -205,7 +207,10 @@ func (m *LuaManager) RegisterDiscordModule() {
 	}
 
 	// Register the loader.
-	m.LuaState.PreloadModule("driftwood", discordLoader)
+	utils.GetLuaRunner().Do(func(L *lua.LState) {
+		L.PreloadModule("driftwood", discordLoader)
+	})
+
 }
 
 func (m *LuaManager) addReady(L *lua.LState, module *lua.LTable) {
@@ -248,11 +253,13 @@ func (m *LuaManager) HandleCommand(s *discordgo.Session, i *discordgo.Interactio
 		for idx := range m.Bindings[groupIdx] {
 			if m.Bindings[groupIdx][idx].CanHandleInteraction(i) {
 				slog.Debug("Binding matched for interaction", "binding", m.Bindings[groupIdx][idx].Name())
-				if err := m.Bindings[groupIdx][idx].HandleInteraction(m.LuaState, i); err == nil {
+
+				if err := m.Bindings[groupIdx][idx].HandleInteraction(i); err == nil {
 					return // Command was handled successfully
 				} else {
 					slog.Warn("Error handling interaction with binding", "binding", m.Bindings[groupIdx][idx].Name(), "error", err)
 				}
+
 			}
 		}
 	}
@@ -264,20 +271,24 @@ func (m *LuaManager) ReadyHandler(s *discordgo.Session, r *discordgo.Ready) {
 	slog.Info("Handling ready event")
 	m.setSession(s)
 	for _, cb := range m.OnReadyCbs {
-		fn := m.LuaState.GetGlobal(cb)
-		if fn == lua.LNil {
-			slog.Error("Lua on_ready handler not found", "handler", cb)
-			continue
-		}
 
-		err := m.LuaState.CallByParam(lua.P{
-			Fn:      fn,
-			NRet:    0,
-			Protect: true,
+		utils.GetLuaRunner().Do(func(L *lua.LState) {
+			fn := L.GetGlobal(cb)
+			if fn == lua.LNil {
+				slog.Error("Lua on_ready handler not found", "handler", cb)
+				return
+			}
+
+			err := L.CallByParam(lua.P{
+				Fn:      fn,
+				NRet:    0,
+				Protect: true,
+			})
+			if err != nil {
+				slog.Error("Error executing Lua on_ready handler", "error", err)
+			}
 		})
-		if err != nil {
-			slog.Error("Error executing Lua on_ready handler", "error", err)
-		}
+
 	}
 }
 
